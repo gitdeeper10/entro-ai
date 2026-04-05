@@ -1,0 +1,70 @@
+# ENTRO-AI Manifest File
+# Entropy-Resistant Inference Architecture for LLMs
+
+# Core files
+include README.md
+include LICENSE
+include NOTICE
+include AUTHORS.md
+include CHANGELOG.md
+include SECURITY.md
+include CODE_OF_CONDUCT.md
+include CONTRIBUTING.md
+include INSTALL.md
+include DEPLOY.md
+include COMPLETION.md
+
+# Configuration
+include pyproject.toml
+include setup.cfg
+include setup.py
+include requirements.txt
+include requirements-dev.txt
+
+# ENTRO-AI specific data
+recursive-include entro_ai/data *.json
+recursive-include entro_ai/data *.yaml
+recursive-include entro_ai/calibration *.json
+
+# Telemetry adapters
+recursive-include entro_ai/adapters *.py
+
+# Examples
+recursive-include examples *.py
+recursive-include examples *.ipynb
+recursive-include examples/data *.csv
+recursive-include examples/models *.json
+
+# Documentation
+recursive-include docs *.rst
+recursive-include docs *.md
+recursive-include docs/source *.rst
+recursive-include docs/source *.py
+
+# Type hints
+recursive-include entro_ai *.pyi
+
+# Testing
+recursive-include tests *.py
+recursive-include tests/fixtures *.json
+recursive-include tests/fixtures *.csv
+
+# Case studies
+recursive-include case_studies *.py
+recursive-include case_studies/data *.csv
+
+# Exclude unnecessary files
+global-exclude __pycache__
+global-exclude *.py[cod]
+global-exclude *.so
+global-exclude .DS_Store
+global-exclude *.egg-info
+global-exclude .git*
+global-exclude .pytest_cache
+global-exclude .coverage
+global-exclude htmlcov
+global-exclude .mypy_cache
+global-exclude .venv
+global-exclude venv
+global-exclude *.pyc
+global-exclude __pycache__

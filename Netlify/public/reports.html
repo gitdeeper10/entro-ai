@@ -1,0 +1,596 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ENTROPIA — Reports & Archive</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@300;400;500;700&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --red:       #c0392b;
+    --red-hot:   #e74c3c;
+    --red-dim:   #7b1c14;
+    --red-glow:  rgba(192,57,43,0.25);
+    --bg:        #080c0b;
+    --bg2:       #0f1412;
+    --bg3:       #141a18;
+    --border:    rgba(192,57,43,0.2);
+    --text:      #e8e0db;
+    --text-dim:  #8a8078;
+    --text-mid:  #c4b8b0;
+    --mono:      'JetBrains Mono', monospace;
+    --display:   'Syne', sans-serif;
+    --serif:     'Instrument Serif', serif;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: var(--display);
+    background: var(--bg);
+    color: var(--text);
+    overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  body::before {
+    content: '';
+    position: fixed; inset: 0; z-index: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+    opacity: 0.5;
+    pointer-events: none;
+  }
+
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 20px; height: 52px;
+    background: rgba(8,12,11,0.88);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+  }
+  .nav-logo {
+    font-family: var(--mono);
+    font-size: 13px; font-weight: 700;
+    color: var(--red-hot);
+    letter-spacing: 0.12em;
+    text-decoration: none;
+  }
+  .nav-links {
+    display: flex; gap: 18px; list-style: none;
+  }
+  .nav-links a {
+    font-family: var(--mono);
+    font-size: 10px; font-weight: 400;
+    color: var(--text-dim); text-decoration: none;
+    letter-spacing: 0.1em; text-transform: uppercase;
+    transition: color 0.2s;
+  }
+  .nav-links a:hover, .nav-links a.active { color: var(--red-hot); }
+
+  .hero {
+    min-height: 40vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 100px 22px 60px;
+    position: relative;
+  }
+  .hero-content {
+    text-align: center;
+    animation: fadeUp 0.8s ease-out;
+  }
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .hero-eyebrow {
+    font-family: var(--mono);
+    font-size: 10px; color: var(--red);
+    letter-spacing: 0.18em; text-transform: uppercase;
+    border: 1px solid var(--red-dim);
+    display: inline-block; padding: 4px 10px; border-radius: 2px;
+    margin-bottom: 28px;
+  }
+  .hero h1 {
+    font-family: var(--display);
+    font-size: clamp(52px, 14vw, 88px);
+    font-weight: 800; line-height: 0.92;
+    letter-spacing: -0.02em;
+    color: var(--text);
+    margin-bottom: 20px;
+  }
+  .hero h1 em {
+    font-style: normal;
+    color: var(--red-hot);
+    -webkit-text-fill-color: transparent;
+    -webkit-text-stroke: 1px var(--red-hot);
+  }
+  .hero p {
+    font-family: var(--serif);
+    font-size: 18px;
+    font-style: italic;
+    color: var(--text-mid);
+    max-width: 700px;
+    margin: 0 auto;
+  }
+
+  .section {
+    padding: 60px 22px;
+    border-bottom: 1px solid var(--border);
+  }
+  .section-header {
+    text-align: center;
+    margin-bottom: 40px;
+  }
+  .section-label {
+    font-family: var(--mono);
+    font-size: 9px; color: var(--red);
+    letter-spacing: 0.18em; text-transform: uppercase;
+    margin-bottom: 12px;
+  }
+  .section-title {
+    font-family: var(--display);
+    font-size: clamp(32px, 8vw, 48px);
+    font-weight: 800;
+    color: var(--text);
+  }
+  .section-title em {
+    font-style: italic;
+    font-family: var(--serif);
+    color: var(--red-hot);
+    font-weight: 400;
+  }
+
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1px;
+    background: var(--border);
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+  .stat-card {
+    background: var(--bg2);
+    padding: 28px 20px;
+    text-align: center;
+  }
+  .stat-number {
+    font-family: var(--mono);
+    font-size: 42px; font-weight: 700;
+    color: var(--red-hot);
+    line-height: 1;
+  }
+  .stat-label {
+    font-family: var(--mono);
+    font-size: 10px; color: var(--text-dim);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-top: 8px;
+  }
+
+  .reports-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1px;
+    background: var(--border);
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+  .report-card {
+    background: var(--bg2);
+    padding: 32px 24px;
+    transition: all 0.3s ease;
+  }
+  .report-card:hover {
+    background: var(--bg3);
+    transform: translateY(-2px);
+  }
+  .report-icon { font-size: 48px; margin-bottom: 16px; }
+  .report-type {
+    font-family: var(--mono);
+    font-size: 9px; color: var(--red);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+  .report-title {
+    font-family: var(--display);
+    font-size: 28px; font-weight: 700;
+    color: var(--red-hot);
+    margin-bottom: 12px;
+  }
+  .report-desc {
+    font-size: 14px; color: var(--text-mid);
+    line-height: 1.6;
+    margin-bottom: 16px;
+  }
+  .report-meta {
+    font-family: var(--mono);
+    font-size: 10px; color: var(--text-dim);
+    margin-bottom: 16px;
+  }
+  .report-link {
+    font-family: var(--mono);
+    font-size: 11px; color: var(--red-hot);
+    text-decoration: none;
+    border-bottom: 1px solid var(--red-dim);
+    padding-bottom: 2px;
+  }
+  .report-link:hover { border-bottom-color: var(--red-hot); }
+
+  .reports-list {
+    max-width: 1200px;
+    margin: 0 auto;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  .report-item {
+    display: grid;
+    grid-template-columns: 100px 100px 1fr 80px 80px;
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border);
+    align-items: center;
+    background: var(--bg2);
+  }
+  .report-item:last-child { border-bottom: none; }
+  .report-item:hover { background: var(--bg3); }
+  .report-date {
+    font-family: var(--mono);
+    font-size: 11px; color: var(--red);
+  }
+  .report-category {
+    font-family: var(--mono);
+    font-size: 10px; letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-mid);
+  }
+  .report-name {
+    font-size: 13px; color: var(--text);
+  }
+  .report-size {
+    font-family: var(--mono);
+    font-size: 10px; color: var(--text-dim);
+    text-align: right;
+  }
+  .report-download {
+    font-family: var(--mono);
+    font-size: 10px; color: var(--red-hot);
+    text-decoration: none;
+    padding: 4px 12px;
+    border: 1px solid var(--border);
+    border-radius: 2px;
+    text-align: center;
+    transition: all 0.2s;
+  }
+  .report-download:hover {
+    background: var(--red);
+    color: #fff;
+    border-color: var(--red);
+  }
+
+  .alerts-section {
+    background: var(--bg3);
+    padding: 40px 22px;
+  }
+  .alerts-container {
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+  .alert-item {
+    display: grid;
+    grid-template-columns: 80px 1fr auto;
+    gap: 20px;
+    padding: 16px 0;
+    border-bottom: 1px solid var(--border);
+    align-items: center;
+  }
+  .alert-item:last-child { border-bottom: none; }
+  .alert-level {
+    font-family: var(--mono);
+    font-size: 10px; font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 6px 12px;
+    border-radius: 2px;
+    text-align: center;
+  }
+  .alert-level.critical {
+    background: rgba(231,76,60,0.15);
+    color: var(--red-hot);
+    border: 1px solid rgba(231,76,60,0.3);
+  }
+  .alert-level.warning {
+    background: rgba(231,126,35,0.15);
+    color: #e67e22;
+    border: 1px solid rgba(231,126,35,0.3);
+  }
+  .alert-level.info {
+    background: rgba(192,57,43,0.1);
+    color: var(--red);
+    border: 1px solid rgba(192,57,43,0.3);
+  }
+  .alert-message { font-size: 13px; color: var(--text-mid); }
+  .alert-time {
+    font-family: var(--mono);
+    font-size: 10px; color: var(--text-dim);
+  }
+
+  .btn-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    justify-content: center;
+    margin: 40px 0;
+  }
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 24px;
+    font-family: var(--mono);
+    font-size: 11px;
+    font-weight: 700;
+    text-decoration: none;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    border-radius: 3px;
+    transition: all 0.2s;
+  }
+  .btn-primary {
+    background: var(--red);
+    color: #fff;
+    border: 1px solid var(--red-hot);
+  }
+  .btn-primary:hover {
+    background: var(--red-hot);
+    transform: translateY(-2px);
+  }
+  .btn-outline {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text-mid);
+  }
+  .btn-outline:hover {
+    border-color: var(--red);
+    color: var(--red-hot);
+  }
+
+  .quote-block {
+    max-width: 900px;
+    margin: 40px auto;
+    border-left: 3px solid var(--red);
+    padding: 24px 28px;
+    background: rgba(192,57,43,0.05);
+    border-radius: 0 4px 4px 0;
+  }
+  .quote-text {
+    font-family: var(--serif);
+    font-size: 20px; font-style: italic;
+    color: var(--text-mid);
+    line-height: 1.6;
+    margin-bottom: 12px;
+  }
+  .quote-author {
+    font-family: var(--mono);
+    font-size: 10px; color: var(--red);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  /* FOOTER - EXACT COPY FROM INDEX.HTML */
+  footer {
+    position: relative; z-index: 1;
+    background: var(--bg2);
+    border-top: 1px solid var(--border);
+    padding: 40px 22px 30px;
+  }
+  .footer-brand {
+    margin-bottom: 28px;
+  }
+  .footer-logo {
+    font-family: var(--display);
+    font-size: 22px; font-weight: 800;
+    color: var(--red-hot);
+    margin-bottom: 6px;
+  }
+  .footer-tagline {
+    font-family: var(--serif);
+    font-size: 13px; font-style: italic;
+    color: var(--text-dim); line-height: 1.5;
+  }
+  .footer-cols {
+    display: flex; flex-direction: column; gap: 28px;
+    margin-bottom: 32px;
+  }
+  .footer-col-title {
+    font-family: var(--mono);
+    font-size: 9px; font-weight: 700;
+    color: var(--red);
+    letter-spacing: 0.16em; text-transform: uppercase;
+    margin-bottom: 12px;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 8px;
+  }
+  .footer-links {
+    list-style: none; display: flex; flex-direction: column; gap: 8px;
+  }
+  .footer-links a {
+    font-family: var(--mono);
+    font-size: 11px; color: var(--text-dim);
+    text-decoration: none;
+    transition: color 0.2s;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .footer-links a:hover { color: var(--red-hot); }
+  .footer-links a span.link-icon { font-size: 12px; }
+  .footer-bottom {
+    border-top: 1px solid var(--border);
+    padding-top: 18px;
+    display: flex; flex-direction: column; gap: 6px;
+  }
+  .footer-copy {
+    font-family: var(--mono);
+    font-size: 10px; color: var(--text-dim);
+  }
+  .footer-copy strong { color: var(--red-hot); }
+
+  @media (min-width: 768px) {
+    .footer-cols {
+      flex-direction: row;
+      justify-content: space-between;
+    }
+    .footer-cols > div {
+      flex: 1;
+    }
+  }
+  @media (max-width: 900px) {
+    .stats-grid, .reports-grid { grid-template-columns: repeat(2, 1fr); }
+    .report-item { grid-template-columns: 80px 80px 1fr 60px 60px; font-size: 11px; }
+  }
+  @media (max-width: 600px) {
+    .stats-grid, .reports-grid { grid-template-columns: 1fr; }
+    .report-item { grid-template-columns: 1fr; gap: 8px; text-align: center; }
+    .alert-item { grid-template-columns: 1fr; text-align: center; gap: 8px; }
+    .report-size, .report-download { text-align: center; }
+  }
+
+  .reveal {
+    opacity: 0; transform: translateY(20px);
+    transition: opacity 0.6s ease, transform 0.6s ease;
+  }
+  .reveal.visible { opacity: 1; transform: translateY(0); }
+</style>
+</head>
+<body>
+
+<nav>
+  <a class="nav-logo" href="index.html">ENTROPIA</a>
+</nav>
+
+<section class="hero">
+  <div class="hero-content">
+    <div class="hero-eyebrow">ENTROPIA · E-LAB-01</div>
+    <h1>Reports & <em>Archive</em></h1>
+    <p>Daily · Weekly · Monthly · Alerts — All reports in plain text format (.txt)</p>
+  </div>
+</section>
+
+<section class="section">
+  <div class="stats-grid">
+    <div class="stat-card reveal"><div class="stat-number">163</div><div class="stat-label">Collapse Events</div></div>
+    <div class="stat-card reveal"><div class="stat-number">94.3%</div><div class="stat-label">Detection Rate</div></div>
+    <div class="stat-card reveal"><div class="stat-number">43.2s</div><div class="stat-label">Lead Time</div></div>
+    <div class="stat-card reveal"><div class="stat-number">1.9%</div><div class="stat-label">False Positive</div></div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="section-header"><div class="section-label">Report Types</div><h2 class="section-title">Daily · Weekly · <em>Monthly</em></h2></div>
+  <div class="reports-grid">
+    <div class="report-card reveal"><div class="report-icon">📅</div><div class="report-type">Daily Reports</div><div class="report-title">Daily</div><div class="report-desc">Ψ coefficient, ρ/ρ_c ratio, risk level, entropy production rate. Generated daily at 23:59 UTC.</div><div class="report-meta">Format: TXT · ~2KB</div><a href="../reports/daily/" class="report-link">View Daily →</a></div>
+    <div class="report-card reveal"><div class="report-icon">📊</div><div class="report-type">Weekly Summary</div><div class="report-title">Weekly</div><div class="report-desc">Weekly Ψ trends, average values, critical events count, collapse predictions.</div><div class="report-meta">Format: TXT · ~6KB</div><a href="../reports/weekly/" class="report-link">View Weekly →</a></div>
+    <div class="report-card reveal"><div class="report-icon">📈</div><div class="report-type">Monthly Analysis</div><div class="report-title">Monthly</div><div class="report-desc">Long-term entropy analysis, phase transition patterns, system stability trends.</div><div class="report-meta">Format: TXT · ~12KB</div><a href="../reports/monthly/" class="report-link">View Monthly →</a></div>
+  </div>
+</section>
+
+<section class="section" style="background: var(--bg3);">
+  <div class="section-header"><div class="section-label">Recent Reports</div><h2 class="section-title">Last 30 days of <em>monitoring</em></h2></div>
+  <div class="reports-list">
+    <div class="report-item"><div class="report-date">2026-03-28</div><div class="report-category">Daily</div><div class="report-name">Ψ = 0.42 · NORMAL · ρ/ρ_c = 0.72</div><div class="report-size">2.1 KB</div><a href="#" class="report-download">.txt</a></div>
+    <div class="report-item"><div class="report-date">2026-03-27</div><div class="report-category">Daily</div><div class="report-name">Ψ = 0.38 · NORMAL · Stable operation</div><div class="report-size">2.0 KB</div><a href="#" class="report-download">.txt</a></div>
+    <div class="report-item"><div class="report-date">2026-03-26</div><div class="report-category">Alert</div><div class="report-name">⚠️ Ψ = 1.87 · CRITICAL ZONE · τ_collapse = 38.4s</div><div class="report-size">1.4 KB</div><a href="#" class="report-download">.txt</a></div>
+    <div class="report-item"><div class="report-date">2026-03-25</div><div class="report-category">Daily</div><div class="report-name">Ψ = 0.45 · NORMAL · ρ/ρ_c = 0.68</div><div class="report-size">2.1 KB</div><a href="#" class="report-download">.txt</a></div>
+    <div class="report-item"><div class="report-date">2026-03-24</div><div class="report-category">Daily</div><div class="report-name">Ψ = 0.52 · NORMAL · System nominal</div><div class="report-size">2.0 KB</div><a href="#" class="report-download">.txt</a></div>
+    <div class="report-item"><div class="report-date">2026-03-23</div><div class="report-category">Weekly</div><div class="report-name">Week 12 Summary · Avg Ψ = 0.48 · 0 critical events</div><div class="report-size">5.8 KB</div><a href="#" class="report-download">.txt</a></div>
+    <div class="report-item"><div class="report-date">2026-03-01</div><div class="report-category">Monthly</div><div class="report-name">February 2026 · Entropy analysis · 28 days data</div><div class="report-size">11.2 KB</div><a href="#" class="report-download">.txt</a></div>
+  </div>
+</section>
+
+<section class="alerts-section">
+  <div class="alerts-container">
+    <div class="section-header"><div class="section-label">Active Alerts</div><h2 class="section-title">Current <em>warnings</em></h2></div>
+    <div class="alert-item"><div class="alert-level info">INFO</div><div class="alert-message">Current Ψ = 0.42 · NORMAL · No critical conditions</div><div class="alert-time">2026-03-28 12:00 UTC</div></div>
+    <div class="alert-item"><div class="alert-level info">INFO</div><div class="alert-message">System stability: ρ/ρ_c = 0.72 · Below critical threshold</div><div class="alert-time">2026-03-28 12:00 UTC</div></div>
+    <div class="alert-item"><div class="alert-level warning">WATCH</div><div class="alert-message">Elevated entropy production rate detected · Monitor Ψ closely</div><div class="alert-time">2026-03-28 11:30 UTC</div></div>
+  </div>
+</section>
+
+<div class="quote-block reveal">
+  <div class="quote-text">"When we learn to read entropy in our machines, we gain sovereignty over the digital world."</div>
+  <div class="quote-author">— Samir Baladi · ENTROPIA · E-LAB-01 · March 2026</div>
+</div>
+
+<section class="section">
+  <div class="section-header"><div class="section-label">Access Reports</div><h2 class="section-title">Full archive & <em>data access</em></h2></div>
+  <div class="btn-row">
+    <a href="https://github.com/gitdeeper10/entropia" class="btn btn-outline">💻 GitHub</a>
+    <a href="https://gitlab.com/gitdeeper10/entropia" class="btn btn-outline">🦊 GitLab</a>
+    <a href="https://pypi.org/project/entropia/" class="btn btn-outline">🐨 PyPI</a>
+    <a href="https://entropia-lab.netlify.app/dashboard" class="btn btn-primary">📊 Live Dashboard</a>
+  </div>
+</section>
+
+<!-- FOOTER - EXACT COPY FROM INDEX.HTML -->
+<footer>
+  <div class="footer-brand">
+    <div class="footer-logo">ENTROPIA 🔴</div>
+    <div class="footer-tagline">
+      The Sun is not the only active engine in our universe —<br>
+      our digital infrastructure is one too. <strong style="font-style:normal;color:var(--text)">ENTROPIA makes it predictable.</strong>
+    </div>
+  </div>
+
+  <div class="footer-cols">
+    <div>
+      <div class="footer-col-title">Quick Links</div>
+      <ul class="footer-links">
+        <li><a href="index.html"><span class="link-icon">🏠</span> Home</a></li>
+        <li><a href="index.html#parameters"><span class="link-icon">⚙️</span> Parameters</a></li>
+        <li><a href="index.html#risk"><span class="link-icon">📈</span> Risk Scale</a></li>
+        <li><a href="index.html#cases"><span class="link-icon">🔬</span> Case Studies</a></li>
+        <li><a href="index.html#publications"><span class="link-icon">📄</span> Publications</a></li>
+        <li><a href="https://entropia-lab.netlify.app/dashboard"><span class="link-icon">📊</span> Live Dashboard</a></li>
+        <li><a href="reports.html"><span class="link-icon">📋</span> Event Reports</a></li>
+        <li><a href="https://entropia-lab.netlify.app/documentation"><span class="link-icon">📚</span> Documentation</a></li>
+      </ul>
+    </div>
+
+    <div>
+      <div class="footer-col-title">Code Repositories</div>
+      <ul class="footer-links">
+        <li><a href="https://gitlab.com/gitdeeper10/entropia"><span class="link-icon">🦊</span> GitLab (Primary)</a></li>
+        <li><a href="https://github.com/gitdeeper10/entropia"><span class="link-icon">💻</span> GitHub (Mirror)</a></li>
+        <li><a href="https://bitbucket.org/gitdeeper-10/entropia"><span class="link-icon">🏴</span> Bitbucket</a></li>
+        <li><a href="https://codeberg.org/gitdeeper10/entropia"><span class="link-icon">🏕</span> Codeberg</a></li>
+        <li><a href="https://pypi.org/project/entropia/"><span class="link-icon">🐨</span> PyPI Package</a></li>
+      </ul>
+    </div>
+
+    <div>
+      <div class="footer-col-title">Resources</div>
+      <ul class="footer-links">
+        <li><a href="https://entropia-lab.netlify.app/paper"><span class="link-icon">📄</span> Research Paper</a></li>
+        <li><a href="#"><span class="link-icon">📊</span> Zenodo Dataset</a></li>
+        <li><a href="https://osf.io/"><span class="link-icon">🔮</span> OSF Preregistration</a></li>
+        <li><a href="https://orcid.org/0009-0003-8903-0029"><span class="link-icon">👤</span> ORCID Profile</a></li>
+        <li><a href="https://entropia-lab.netlify.app"><span class="link-icon">🔴</span> ENTROPIA Portal</a></li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="footer-bottom">
+    <div class="footer-copy">
+      Copyright © <strong>ENTROPIA 🔴</strong> 2026 · All rights reserved
+    </div>
+  </div>
+</footer>
+
+<script>
+const observer = new IntersectionObserver(entries => { entries.forEach(e => { if(e.isIntersecting) e.target.classList.add('visible'); }); }, { threshold: 0.1 });
+document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+</script>
+</body>
+</html>

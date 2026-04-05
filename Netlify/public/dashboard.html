@@ -1,0 +1,642 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ENTROPIA — Ψ-Dashboard | Live Thermodynamic Monitoring</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@300;400;500;700&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --red:       #c0392b;
+    --red-hot:   #e74c3c;
+    --red-dim:   #7b1c14;
+    --red-glow:  rgba(192,57,43,0.25);
+    --bg:        #080c0b;
+    --bg2:       #0f1412;
+    --bg3:       #141a18;
+    --border:    rgba(192,57,43,0.2);
+    --text:      #e8e0db;
+    --text-dim:  #8a8078;
+    --text-mid:  #c4b8b0;
+    --mono:      'JetBrains Mono', monospace;
+    --display:   'Syne', sans-serif;
+    --serif:     'Instrument Serif', serif;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: var(--display);
+    background: var(--bg);
+    color: var(--text);
+    overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  body::before {
+    content: '';
+    position: fixed; inset: 0; z-index: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+    opacity: 0.5;
+    pointer-events: none;
+  }
+
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 20px; height: 52px;
+    background: rgba(8,12,11,0.88);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+  }
+  .nav-logo {
+    font-family: var(--mono);
+    font-size: 13px; font-weight: 700;
+    color: var(--red-hot);
+    letter-spacing: 0.12em;
+    text-decoration: none;
+  }
+  .nav-links {
+    display: flex; gap: 18px; list-style: none;
+  }
+  .nav-links a {
+    font-family: var(--mono);
+    font-size: 10px; font-weight: 400;
+    color: var(--text-dim); text-decoration: none;
+    letter-spacing: 0.1em; text-transform: uppercase;
+    transition: color 0.2s;
+  }
+  .nav-links a:hover, .nav-links a.active { color: var(--red-hot); }
+
+  .dashboard-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 100px 22px 60px;
+    position: relative;
+    z-index: 2;
+  }
+
+  /* Hero Section */
+  .dashboard-header {
+    text-align: center;
+    margin-bottom: 48px;
+  }
+  .dashboard-badge {
+    font-family: var(--mono);
+    font-size: 10px; color: var(--red);
+    letter-spacing: 0.18em; text-transform: uppercase;
+    border: 1px solid var(--red-dim);
+    display: inline-block; padding: 4px 10px; border-radius: 2px;
+    margin-bottom: 20px;
+  }
+  .dashboard-header h1 {
+    font-family: var(--display);
+    font-size: clamp(40px, 10vw, 64px);
+    font-weight: 800; line-height: 0.92;
+    letter-spacing: -0.02em;
+    color: var(--text);
+    margin-bottom: 12px;
+  }
+  .dashboard-header h1 em {
+    font-style: normal;
+    color: var(--red-hot);
+    -webkit-text-fill-color: transparent;
+    -webkit-text-stroke: 1px var(--red-hot);
+  }
+  .dashboard-sub {
+    font-family: var(--serif);
+    font-size: 16px; font-style: italic;
+    color: var(--text-mid);
+    margin-top: 8px;
+  }
+  .last-update {
+    font-family: var(--mono);
+    font-size: 10px; color: var(--text-dim);
+    margin-top: 12px;
+    letter-spacing: 0.05em;
+  }
+
+  /* Metrics Grid - 4 cards */
+  .metrics-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1px;
+    background: var(--border);
+    margin-bottom: 32px;
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  .metric-card {
+    background: var(--bg2);
+    padding: 24px 20px;
+    text-align: center;
+    transition: all 0.3s ease;
+  }
+  .metric-card:hover {
+    background: var(--bg3);
+    transform: translateY(-2px);
+  }
+  .metric-value {
+    font-family: var(--mono);
+    font-size: 42px; font-weight: 700;
+    color: var(--red-hot);
+    line-height: 1;
+  }
+  .metric-label {
+    font-family: var(--mono);
+    font-size: 9px; color: var(--text-dim);
+    letter-spacing: 0.12em; text-transform: uppercase;
+    margin-top: 8px;
+  }
+  .metric-sub {
+    font-family: var(--mono);
+    font-size: 9px; color: var(--text-dim);
+    margin-top: 4px;
+  }
+
+  /* Parameter Matrix Section */
+  .section-title {
+    font-family: var(--display);
+    font-size: 24px; font-weight: 700;
+    margin: 40px 0 20px;
+    border-left: 3px solid var(--red);
+    padding-left: 16px;
+  }
+  .section-title em {
+    color: var(--red-hot);
+    font-style: italic;
+    font-family: var(--serif);
+  }
+  .param-matrix {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    overflow: hidden;
+    margin-bottom: 32px;
+  }
+  .param-row {
+    display: grid;
+    grid-template-columns: 120px 1fr 100px;
+    align-items: center;
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border);
+  }
+  .param-row:last-child { border-bottom: none; }
+  .param-symbol {
+    font-family: var(--mono);
+    font-size: 18px; font-weight: 700;
+    color: var(--red-hot);
+  }
+  .param-name {
+    font-family: var(--mono);
+    font-size: 11px; color: var(--text-dim);
+    letter-spacing: 0.05em;
+  }
+  .param-bar {
+    flex: 1;
+    margin: 0 20px;
+  }
+  .bar-track {
+    background: var(--bg3);
+    height: 6px;
+    border-radius: 3px;
+    overflow: hidden;
+  }
+  .bar-fill {
+    background: linear-gradient(90deg, var(--red-dim), var(--red-hot));
+    height: 100%;
+    width: 0%;
+    border-radius: 3px;
+    transition: width 0.5s ease;
+  }
+  .param-value {
+    font-family: var(--mono);
+    font-size: 13px; font-weight: 500;
+    color: var(--text);
+    text-align: right;
+  }
+  .param-unit {
+    font-family: var(--mono);
+    font-size: 9px; color: var(--text-dim);
+    margin-left: 4px;
+  }
+
+  /* Live Ψ Display */
+  .psi-live-card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 24px;
+    margin-bottom: 32px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .psi-live-card::before {
+    content: '';
+    position: absolute; top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, var(--red-dim), var(--red-hot), var(--red-dim));
+  }
+  .psi-label {
+    font-family: var(--mono);
+    font-size: 10px; color: var(--red);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    margin-bottom: 16px;
+  }
+  .psi-value {
+    font-family: var(--mono);
+    font-size: 64px; font-weight: 700;
+    color: var(--red-hot);
+    line-height: 1;
+    text-shadow: 0 0 30px rgba(231,76,60,0.3);
+  }
+  .psi-status {
+    display: inline-block;
+    font-family: var(--mono);
+    font-size: 11px;
+    padding: 4px 12px;
+    border-radius: 2px;
+    margin-top: 12px;
+  }
+  .status-normal { background: rgba(46,204,113,0.15); color: #2ecc71; border: 1px solid rgba(46,204,113,0.3); }
+  .status-elevated { background: rgba(243,156,18,0.15); color: #f39c12; border: 1px solid rgba(243,156,18,0.3); }
+  .status-critical { background: rgba(231,76,60,0.2); color: var(--red-hot); border: 1px solid rgba(231,76,60,0.4); animation: pulse 1s infinite; }
+  .status-collapse { background: rgba(231,76,60,0.4); color: #fff; border: 1px solid var(--red-hot); animation: pulse 0.8s infinite; }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.6; }
+  }
+
+  /* Reports Grid */
+  .reports-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1px;
+    background: var(--border);
+    margin: 32px 0;
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  .report-card {
+    background: var(--bg2);
+    padding: 20px;
+    text-align: center;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    display: block;
+  }
+  .report-card:hover {
+    background: var(--bg3);
+    transform: translateY(-2px);
+  }
+  .report-icon { font-size: 28px; margin-bottom: 8px; }
+  .report-title {
+    font-family: var(--mono);
+    font-size: 11px; font-weight: 700;
+    color: var(--red-hot);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+  .report-desc {
+    font-family: var(--mono);
+    font-size: 9px; color: var(--text-dim);
+    margin-top: 6px;
+  }
+
+  /* Resources Section */
+  .resources-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    justify-content: center;
+    margin: 32px 0;
+  }
+  .resource-btn {
+    font-family: var(--mono);
+    font-size: 11px;
+    padding: 10px 20px;
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    color: var(--text-dim);
+    text-decoration: none;
+    transition: all 0.2s;
+  }
+  .resource-btn:hover {
+    border-color: var(--red);
+    color: var(--red-hot);
+    transform: translateY(-2px);
+  }
+
+  /* Footer */
+  footer {
+    background: var(--bg2);
+    border-top: 1px solid var(--border);
+    padding: 40px 22px 30px;
+    margin-top: 48px;
+  }
+  .footer-brand {
+    margin-bottom: 28px;
+  }
+  .footer-logo {
+    font-family: var(--display);
+    font-size: 22px; font-weight: 800;
+    color: var(--red-hot);
+    margin-bottom: 6px;
+  }
+  .footer-tagline {
+    font-family: var(--serif);
+    font-size: 13px; font-style: italic;
+    color: var(--text-dim); line-height: 1.5;
+  }
+  .footer-cols {
+    display: flex; flex-direction: column; gap: 28px;
+    margin-bottom: 32px;
+  }
+  .footer-col-title {
+    font-family: var(--mono);
+    font-size: 9px; font-weight: 700;
+    color: var(--red);
+    letter-spacing: 0.16em; text-transform: uppercase;
+    margin-bottom: 12px;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 8px;
+  }
+  .footer-links {
+    list-style: none; display: flex; flex-direction: column; gap: 8px;
+  }
+  .footer-links a {
+    font-family: var(--mono);
+    font-size: 11px; color: var(--text-dim);
+    text-decoration: none;
+    transition: color 0.2s;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .footer-links a:hover { color: var(--red-hot); }
+  .footer-bottom {
+    border-top: 1px solid var(--border);
+    padding-top: 18px;
+    text-align: center;
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--text-dim);
+  }
+  .footer-bottom strong { color: var(--red-hot); }
+
+  @media (min-width: 768px) {
+    .footer-cols {
+      flex-direction: row;
+      justify-content: space-between;
+    }
+    .footer-cols > div { flex: 1; }
+  }
+  @media (max-width: 700px) {
+    .metrics-grid, .reports-grid { grid-template-columns: repeat(2, 1fr); }
+    .param-row { grid-template-columns: 80px 1fr 80px; padding: 12px; }
+  }
+  @media (max-width: 480px) {
+    .metrics-grid, .reports-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="index.html" class="nav-logo">ENTROPIA 🔴</a>
+
+</nav>
+
+<div class="dashboard-container">
+  <div class="dashboard-header">
+    <div class="dashboard-badge">ENTROPIA · ADVANCED THERMODYNAMIC ANALYTICS TERMINAL</div>
+    <h1><em>Ψ</em>-Dashboard</h1>
+    <div class="dashboard-sub">Live Dissipation Coefficient Monitoring & Collapse Prediction</div>
+    <div class="last-update" id="lastUpdate">Last Update: --:--:-- UTC</div>
+  </div>
+
+  <!-- Live Ψ Card -->
+  <div class="psi-live-card">
+    <div class="psi-label">CURRENT DISSIPATION COEFFICIENT</div>
+    <div class="psi-value" id="psiValue">--</div>
+    <div>
+      <span class="psi-status" id="psiStatus">--</span>
+    </div>
+    <div class="psi-label" style="margin-top: 16px;" id="tauValue">τ_collapse: -- s</div>
+  </div>
+
+  <!-- Metrics Grid -->
+  <div class="metrics-grid">
+    <div class="metric-card">
+      <div class="metric-value" id="detectionRate">94.3%</div>
+      <div class="metric-label">Detection Rate</div>
+      <div class="metric-sub">E-ENV-03 · 94/100 events</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-value" id="leadTime">43.2</div>
+      <div class="metric-label">Lead Time (s)</div>
+      <div class="metric-sub">Mean τ_collapse · ±8.6s</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-value" id="falsePositive">1.7%</div>
+      <div class="metric-label">False Positive</div>
+      <div class="metric-sub">Ψ > 2.0 threshold</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-value" id="validationEvents">163</div>
+      <div class="metric-label">Validation Events</div>
+      <div class="metric-sub">3 environments · 10³→10⁹ nodes</div>
+    </div>
+  </div>
+
+  <!-- ENTROPIA Parameter Matrix -->
+  <div class="section-title">📐 ENTROPIA <em>Parameter Matrix</em></div>
+  <div class="param-matrix" id="paramMatrix">
+    <div class="param-row">
+      <div><span class="param-symbol">ρ</span><div class="param-name">Data Density</div></div>
+      <div class="param-bar"><div class="bar-track"><div class="bar-fill" id="rhoFill" style="width: 0%"></div></div></div>
+      <div><span class="param-value" id="rhoValue">--</span><span class="param-unit">bits·s⁻¹·m⁻³</span></div>
+    </div>
+    <div class="param-row">
+      <div><span class="param-symbol">ρ/ρ_c</span><div class="param-name">Density Ratio</div></div>
+      <div class="param-bar"><div class="bar-track"><div class="bar-fill" id="rhoRatioFill" style="width: 0%"></div></div></div>
+      <div><span class="param-value" id="rhoRatio">--</span><span class="param-unit"></span></div>
+    </div>
+    <div class="param-row">
+      <div><span class="param-symbol">Ψ</span><div class="param-name">Dissipation Coeff</div></div>
+      <div class="param-bar"><div class="bar-track"><div class="bar-fill" id="psiFill" style="width: 0%"></div></div></div>
+      <div><span class="param-value" id="psiParamValue">--</span><span class="param-unit"></span></div>
+    </div>
+    <div class="param-row">
+      <div><span class="param-symbol">σ</span><div class="param-name">Entropy Prod. Rate</div></div>
+      <div class="param-bar"><div class="bar-track"><div class="bar-fill" id="sigmaFill" style="width: 0%"></div></div></div>
+      <div><span class="param-value" id="sigmaValue">--</span><span class="param-unit">J·K⁻¹·m⁻³·s⁻¹</span></div>
+    </div>
+    <div class="param-row">
+      <div><span class="param-symbol">τ</span><div class="param-name">Collapse Lead Time</div></div>
+      <div class="param-bar"><div class="bar-track"><div class="bar-fill" id="tauFill" style="width: 0%"></div></div></div>
+      <div><span class="param-value" id="tauParamValue">--</span><span class="param-unit">seconds</span></div>
+    </div>
+  </div>
+
+  <!-- Risk Scale Reference -->
+  <div class="section-title">⚠️ <em>Risk Scale</em> Reference</div>
+  <div class="param-matrix" style="margin-bottom: 32px;">
+    <div class="param-row" style="grid-template-columns: 100px 1fr;">
+      <div><span style="color:#2ecc71;">Ψ < 0.7</span></div><div>✅ Normal Operation — No action required</div>
+    </div>
+    <div class="param-row" style="grid-template-columns: 100px 1fr;">
+      <div><span style="color:#f39c12;">0.7–1.4</span></div><div>⚠️ Elevated Load — Monitor entropy production rate</div>
+    </div>
+    <div class="param-row" style="grid-template-columns: 100px 1fr;">
+      <div><span style="color:#e67e22;">1.4–2.0</span></div><div>🔶 Critical Zone — Intervention recommended</div>
+    </div>
+    <div class="param-row" style="grid-template-columns: 100px 1fr;">
+      <div><span style="color:var(--red-hot);">Ψ > 2.0</span></div><div>🔴 Collapse Imminent — τ_collapse countdown active</div>
+    </div>
+  </div>
+
+  <!-- Reports Access -->
+  <div class="section-title">📋 <em>Reports</em> Access</div>
+  <div class="reports-grid">
+    <a href="../reports/daily/" class="report-card">
+      <div class="report-icon">📅</div>
+      <div class="report-title">Daily Reports</div>
+      <div class="report-desc">.txt · ~2KB</div>
+    </a>
+    <a href="../reports/weekly/" class="report-card">
+      <div class="report-icon">📊</div>
+      <div class="report-title">Weekly Summary</div>
+      <div class="report-desc">.txt · ~6KB</div>
+    </a>
+    <a href="../reports/monthly/" class="report-card">
+      <div class="report-icon">📈</div>
+      <div class="report-title">Monthly Analysis</div>
+      <div class="report-desc">.txt · ~12KB</div>
+    </a>
+    <a href="../reports/alerts/" class="report-card">
+      <div class="report-icon">⚠️</div>
+      <div class="report-title">Active Alerts</div>
+      <div class="report-desc">Critical notifications</div>
+    </a>
+  </div>
+
+  <!-- Resources -->
+  <div class="section-title">🔗 <em>Resources</em></div>
+  <div class="resources-grid">
+    <a href="https://entropia-lab.netlify.app/paper" class="resource-btn" target="_blank">📄 Research Paper</a>
+    <a href="https://github.com/gitdeeper10/entropia" class="resource-btn" target="_blank">💻 GitHub</a>
+    <a href="https://pypi.org/project/entropia" class="resource-btn" target="_blank">🐨 PyPI Package</a>
+    <a href="documentation.html" class="resource-btn">📚 Documentation</a>
+    <a href="reports.html" class="resource-btn">📋 Reports Archive</a>
+  </div>
+</div>
+
+<footer>
+  <div class="footer-brand">
+    <div class="footer-logo">ENTROPIA 🔴</div>
+    <div class="footer-tagline">
+      The Sun is not the only active engine in our universe —<br>
+      our digital infrastructure is one too. <strong style="font-style:normal;color:var(--text)">ENTROPIA makes it predictable.</strong>
+    </div>
+  </div>
+
+  <div class="footer-cols">
+    <div>
+      <div class="footer-col-title">Quick Links</div>
+      <ul class="footer-links">
+        <li><a href="index.html"><span class="link-icon">🏠</span> Home</a></li>
+        <li><a href="index.html#parameters"><span class="link-icon">⚙️</span> Parameters</a></li>
+        <li><a href="index.html#risk"><span class="link-icon">📈</span> Risk Scale</a></li>
+        <li><a href="reports.html"><span class="link-icon">📋</span> Reports</a></li>
+        <li><a href="dashboard.html"><span class="link-icon">📊</span> Dashboard</a></li>
+        <li><a href="documentation.html"><span class="link-icon">📚</span> Documentation</a></li>
+      </ul>
+    </div>
+    <div>
+    <div>
+      <div class="footer-col-title">Code Repositories</div>
+      <ul class="footer-links">
+        <li><a href="https://gitlab.com/gitdeeper10/entropia"><span class="link-icon">🦊</span> GitLab (Primary)</a></li>
+        <li><a href="https://github.com/gitdeeper10/entropia"><span class="link-icon">💻</span> GitHub (Mirror)</a></li>
+        <li><a href="https://bitbucket.org/gitdeeper-10/entropia"><span class="link-icon">🏴</span> Bitbucket</a></li>
+        <li><a href="https://codeberg.org/gitdeeper10/entropia"><span class="link-icon">🏕</span> Codeberg</a></li>
+        <li><a href="https://pypi.org/project/entropia/"><span class="link-icon">🐨</span> PyPI Package</a></li>
+      </ul>
+    </div>
+
+    <div>
+      <div class="footer-col-title">Resources</div>
+      <ul class="footer-links">
+        <li><a href="https://entropia-lab.netlify.app/paper"><span class="link-icon">📄</span> Research Paper</a></li>
+        <li><a href="https://orcid.org/0009-0003-8903-0029"><span class="link-icon">👤</span> ORCID Profile</a></li>
+        <li><a href="https://entropia-lab.netlify.app"><span class="link-icon">🔴</span> ENTROPIA Portal</a></li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="footer-bottom">
+    <div class="footer-copy">Copyright © <strong>ENTROPIA 🔴</strong> 2026 · All rights reserved</div>
+  </div>
+</footer>
+
+<script>
+  // Simulated live data update (would connect to backend API in production)
+  function updateDashboard() {
+    // Generate simulated Ψ values between 0.2 and 2.5
+    let psi = (Math.random() * 2.3 + 0.2).toFixed(3);
+    let psiNum = parseFloat(psi);
+    let rhoRatio = (0.4 + Math.random() * 0.5).toFixed(3);
+    let tau = psiNum > 2.0 ? (Math.random() * 20 + 5).toFixed(1) : (Math.random() * 50 + 30).toFixed(1);
+    let sigma = (Math.random() * 1e-33 + 5e-34).toExponential(2);
+    
+    // Update display
+    document.getElementById('psiValue').innerHTML = psi;
+    document.getElementById('psiParamValue').innerHTML = psi;
+    document.getElementById('rhoRatio').innerHTML = rhoRatio;
+    document.getElementById('tauParamValue').innerHTML = tau;
+    document.getElementById('tauValue').innerHTML = `τ_collapse: ${tau} s`;
+    document.getElementById('sigmaValue').innerHTML = sigma;
+    
+    // Update bars
+    let psiPercent = Math.min(100, (psiNum / 3.0) * 100);
+    let rhoPercent = parseFloat(rhoRatio) * 100;
+    let tauPercent = Math.min(100, (parseFloat(tau) / 60) * 100);
+    let sigmaPercent = Math.min(100, (parseFloat(sigma) / 1e-33) * 10);
+    
+    document.getElementById('psiFill').style.width = psiPercent + '%';
+    document.getElementById('rhoRatioFill').style.width = rhoPercent + '%';
+    document.getElementById('tauFill').style.width = tauPercent + '%';
+    document.getElementById('sigmaFill').style.width = sigmaPercent + '%';
+    
+    // Update status based on Ψ
+    let statusEl = document.getElementById('psiStatus');
+    if (psiNum < 0.7) {
+      statusEl.innerHTML = '✅ NORMAL OPERATION';
+      statusEl.className = 'psi-status status-normal';
+    } else if (psiNum < 1.4) {
+      statusEl.innerHTML = '⚠️ ELEVATED LOAD · Monitor closely';
+      statusEl.className = 'psi-status status-elevated';
+    } else if (psiNum < 2.0) {
+      statusEl.innerHTML = '🔶 CRITICAL ZONE · Intervention recommended';
+      statusEl.className = 'psi-status status-critical';
+    } else {
+      statusEl.innerHTML = '🔴 COLLAPSE IMMINENT · τ_collapse countdown active';
+      statusEl.className = 'psi-status status-collapse';
+    }
+    
+    // Update timestamp
+    let now = new Date();
+    document.getElementById('lastUpdate').innerHTML = `Last Update: ${now.toLocaleTimeString()} UTC`;
+  }
+  
+  // Initial update
+  updateDashboard();
+  // Update every 3 seconds
+  setInterval(updateDashboard, 3000);
+</script>
+</body>
+</html>

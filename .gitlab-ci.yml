@@ -1,0 +1,179 @@
+# ENTRO-AI GitLab CI/CD Pipeline
+# Entropy-Resistant Inference Architecture for LLMs
+
+stages:
+  - lint
+  - test
+  - build
+  - deploy
+  - benchmark
+
+variables:
+  PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
+  PYTHON_VERSION: "3.11"
+  ENTRO_AI_ENV: "testing"
+
+cache:
+  paths:
+    - .cache/pip
+    - .venv
+
+before_script:
+  - apt-get update -qq && apt-get install -y -qq libopenblas-dev
+  - python -V
+  - python -m venv .venv
+  - source .venv/bin/activate
+  - pip install --upgrade pip
+  - pip install -e ".[dev]"
+
+# Linting Stage
+lint:
+  stage: lint
+  script:
+    - echo "Running linters for ENTRO-AI..."
+    - black --check entro_ai/ tests/
+    - isort --check-only entro_ai/ tests/
+    - flake8 entro_ai/ tests/
+    - mypy entro_ai/
+  only:
+    - merge_requests
+    - main
+    - develop
+
+# Unit Tests
+unit-tests:
+  stage: test
+  script:
+    - echo "Running unit tests for ENTRO-AI..."
+    - pytest tests/ -m "not slow" --cov=entro_ai --cov-report=term --cov-report=html
+  coverage: '/TOTAL.*\s+(\d+%)$/'
+  artifacts:
+    paths:
+      - htmlcov/
+    expire_in: 1 week
+  only:
+    - merge_requests
+    - main
+    - develop
+
+# Integration Tests (with real models)
+integration-tests:
+  stage: test
+  script:
+    - echo "Running integration tests with vLLM..."
+    - pytest tests/ -m "integration" --timeout=300
+  only:
+    - merge_requests
+    - main
+  when: manual
+
+# Architecture Calibration Tests
+calibration-tests:
+  stage: test
+  script:
+    - echo "Running architecture calibration tests..."
+    - python calibration/transformer_calibrator.py --quick
+    - python calibration/bert_calibrator.py --quick
+    - python calibration/neuromorphic_calibrator.py --quick
+  only:
+    - main
+  when: manual
+  tags:
+    - gpu
+
+# Build Package
+build-package:
+  stage: build
+  script:
+    - echo "Building ENTRO-AI package..."
+    - python -m build
+    - twine check dist/*
+  artifacts:
+    paths:
+      - dist/
+    expire_in: 1 week
+  only:
+    - tags
+    - main
+
+# Build Docker Image
+build-docker:
+  stage: build
+  image: docker:latest
+  services:
+    - docker:dind
+  variables:
+    DOCKER_IMAGE: $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA
+    DOCKER_LATEST: $CI_REGISTRY_IMAGE:latest
+  script:
+    - echo "Building ENTRO-AI Docker image..."
+    - docker build -t $DOCKER_IMAGE -t $DOCKER_LATEST -f Dockerfile.ai .
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+    - docker push $DOCKER_IMAGE
+    - docker push $DOCKER_LATEST
+  only:
+    - main
+  when: manual
+
+# Documentation
+docs:
+  stage: build
+  script:
+    - echo "Building ENTRO-AI documentation..."
+    - cd docs
+    - make html
+    - mv _build/html ../public/
+  artifacts:
+    paths:
+      - public/
+    expire_in: 1 week
+  only:
+    - main
+    - develop
+
+# Deploy to Netlify
+deploy-netlify:
+  stage: deploy
+  image: node:latest
+  script:
+    - npm install -g netlify-cli
+    - netlify deploy --site=$NETLIFY_SITE_ID --auth=$NETLIFY_AUTH_TOKEN --dir=public --prod
+  only:
+    - main
+  dependencies:
+    - docs
+  when: manual
+
+# Performance Benchmark (EDT efficacy)
+benchmark:
+  stage: benchmark
+  script:
+    - echo "Running ENTRO-AI benchmarks..."
+    - pytest tests/benchmarks/ --benchmark-only --benchmark-json=benchmark.json
+    - python scripts/compare_benchmarks.py
+  artifacts:
+    paths:
+      - benchmark.json
+    expire_in: 1 month
+  only:
+    - main
+  when: manual
+  tags:
+    - gpu
+
+# Release
+release:
+  stage: deploy
+  image: registry.gitlab.com/gitlab-org/release-cli:latest
+  script:
+    - echo "Creating ENTRO-AI release..."
+  release:
+    name: 'ENTRO-AI Release $CI_COMMIT_TAG'
+    description: 'ENTRO-AI $CI_COMMIT_TAG - Entropy-Resistant Inference Architecture for LLMs'
+    tag_name: $CI_COMMIT_TAG
+    assets:
+      links:
+        - name: 'Package'
+          url: 'https://gitlab.com/$CI_PROJECT_PATH/-/jobs/artifacts/$CI_COMMIT_TAG/raw/dist/entro_ai-$CI_COMMIT_TAG-py3-none-any.whl?job=build-package'
+  only:
+    - tags

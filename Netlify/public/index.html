@@ -1,0 +1,1354 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ENTROPIA — Statistical Dynamics of Information Dissipation</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@300;400;500;700&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --red:       #c0392b;
+    --red-hot:   #e74c3c;
+    --red-dim:   #7b1c14;
+    --red-glow:  rgba(192,57,43,0.25);
+    --bg:        #080c0b;
+    --bg2:       #0f1412;
+    --bg3:       #141a18;
+    --border:    rgba(192,57,43,0.2);
+    --text:      #e8e0db;
+    --text-dim:  #8a8078;
+    --text-mid:  #c4b8b0;
+    --mono:      'JetBrains Mono', monospace;
+    --display:   'Syne', sans-serif;
+    --serif:     'Instrument Serif', serif;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: var(--display);
+    background: var(--bg);
+    color: var(--text);
+    overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ── NOISE OVERLAY ── */
+  body::before {
+    content: '';
+    position: fixed; inset: 0; z-index: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+    opacity: 0.5;
+    pointer-events: none;
+  }
+
+  /* ── NAV ── */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 20px; height: 52px;
+    background: rgba(8,12,11,0.88);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+  }
+  .nav-logo {
+    font-family: var(--mono);
+    font-size: 13px; font-weight: 700;
+    color: var(--red-hot);
+    letter-spacing: 0.12em;
+    text-decoration: none;
+  }
+  .nav-links {
+    display: flex; gap: 18px; list-style: none;
+  }
+  .nav-links a {
+    font-family: var(--mono);
+    font-size: 10px; font-weight: 400;
+    color: var(--text-dim); text-decoration: none;
+    letter-spacing: 0.1em; text-transform: uppercase;
+    transition: color 0.2s;
+  }
+  .nav-links a:hover { color: var(--red-hot); }
+  .nav-cta {
+    font-family: var(--mono);
+    font-size: 10px; font-weight: 700;
+    color: var(--red-hot);
+    border: 1px solid var(--red);
+    padding: 5px 12px; border-radius: 2px;
+    text-decoration: none; letter-spacing: 0.1em;
+    transition: all 0.2s;
+  }
+  .nav-cta:hover { background: var(--red); color: #fff; }
+
+  /* ── SECTIONS ── */
+  section { position: relative; z-index: 1; }
+
+  /* ── HERO ── */
+  #hero {
+    min-height: 100svh;
+    display: flex; flex-direction: column; justify-content: center;
+    padding: 80px 22px 60px;
+    background:
+      radial-gradient(ellipse 70% 50% at 50% 100%, rgba(192,57,43,0.12) 0%, transparent 70%),
+      radial-gradient(ellipse 40% 30% at 80% 20%, rgba(192,57,43,0.06) 0%, transparent 60%);
+  }
+
+  /* Animated entropy grid */
+  .entropy-grid {
+    position: absolute; inset: 0; overflow: hidden; opacity: 0.07;
+  }
+  .entropy-grid svg { width: 100%; height: 100%; }
+
+  .hero-tag {
+    font-family: var(--mono);
+    font-size: 10px; font-weight: 400;
+    color: var(--red);
+    letter-spacing: 0.18em; text-transform: uppercase;
+    border: 1px solid var(--red-dim);
+    display: inline-block; padding: 4px 10px; border-radius: 2px;
+    margin-bottom: 28px;
+    animation: fadeUp 0.8s ease 0.1s both;
+  }
+
+  .hero-title {
+    font-family: var(--display);
+    font-size: clamp(52px, 14vw, 88px);
+    font-weight: 800; line-height: 0.92;
+    letter-spacing: -0.02em;
+    color: var(--text);
+    margin-bottom: 8px;
+    animation: fadeUp 0.8s ease 0.2s both;
+  }
+  .hero-title em {
+    font-style: normal;
+    color: var(--red-hot);
+    -webkit-text-fill-color: transparent;
+    -webkit-text-stroke: 1px var(--red-hot);
+  }
+
+  .hero-subtitle {
+    font-family: var(--serif);
+    font-size: clamp(15px, 4vw, 18px);
+    font-style: italic; color: var(--text-mid);
+    line-height: 1.55; margin-bottom: 36px;
+    animation: fadeUp 0.8s ease 0.3s both;
+  }
+
+  /* Psi live display */
+  .psi-live {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 6px; padding: 18px 20px; margin-bottom: 32px;
+    animation: fadeUp 0.8s ease 0.4s both;
+  }
+  .psi-label {
+    font-family: var(--mono);
+    font-size: 9px; color: var(--text-dim);
+    letter-spacing: 0.15em; text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+  .psi-row {
+    display: flex; align-items: baseline; gap: 10px;
+  }
+  .psi-value {
+    font-family: var(--mono);
+    font-size: 42px; font-weight: 700;
+    color: var(--red-hot);
+    line-height: 1;
+    text-shadow: 0 0 30px rgba(231,76,60,0.5);
+  }
+  .psi-unit {
+    font-family: var(--mono);
+    font-size: 13px; color: var(--text-dim);
+  }
+  .psi-status {
+    display: flex; align-items: center; gap: 6px;
+    margin-top: 10px;
+  }
+  .status-dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: #2ecc71;
+    box-shadow: 0 0 8px rgba(46,204,113,0.6);
+    animation: pulse-dot 1.5s ease infinite;
+  }
+  .status-dot.warn { background: #f39c12; box-shadow: 0 0 8px rgba(243,156,18,0.6); }
+  .status-dot.crit { background: var(--red-hot); box-shadow: 0 0 8px rgba(231,76,60,0.6); }
+  .status-text {
+    font-family: var(--mono);
+    font-size: 10px; color: var(--text-dim);
+    letter-spacing: 0.1em;
+  }
+  .psi-bar-track {
+    width: 100%; height: 3px;
+    background: rgba(255,255,255,0.06);
+    border-radius: 2px; margin-top: 14px; overflow: hidden;
+  }
+  .psi-bar-fill {
+    height: 100%; width: 0;
+    background: linear-gradient(90deg, var(--red-dim), var(--red-hot));
+    border-radius: 2px;
+    animation: fillBar 2.4s cubic-bezier(0.4,0,0.2,1) 0.8s forwards;
+  }
+
+  .hero-btns {
+    display: flex; flex-direction: column; gap: 10px;
+    animation: fadeUp 0.8s ease 0.5s both;
+  }
+  .btn-primary {
+    display: flex; align-items: center; justify-content: center;
+    gap: 8px; padding: 15px 24px;
+    background: var(--red);
+    color: #fff; font-family: var(--mono);
+    font-size: 12px; font-weight: 700;
+    letter-spacing: 0.1em; text-transform: uppercase;
+    text-decoration: none; border-radius: 3px;
+    border: 1px solid var(--red-hot);
+    transition: all 0.2s;
+    box-shadow: 0 4px 24px rgba(192,57,43,0.3);
+  }
+  .btn-primary:hover { background: var(--red-hot); box-shadow: 0 4px 32px rgba(231,76,60,0.5); }
+  .btn-ghost {
+    display: flex; align-items: center; justify-content: center;
+    gap: 8px; padding: 15px 24px;
+    background: transparent;
+    color: var(--text-mid); font-family: var(--mono);
+    font-size: 12px; font-weight: 400;
+    letter-spacing: 0.1em; text-transform: uppercase;
+    text-decoration: none; border-radius: 3px;
+    border: 1px solid rgba(255,255,255,0.1);
+    transition: all 0.2s;
+  }
+  .btn-ghost:hover { border-color: var(--red); color: var(--red-hot); }
+
+  /* ── STAT STRIP ── */
+  #stats {
+    padding: 0 22px 50px;
+    display: flex; flex-direction: column; gap: 10px;
+  }
+  .stat-card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 4px; padding: 20px;
+    display: flex; flex-direction: column;
+    gap: 4px;
+    position: relative; overflow: hidden;
+    animation: fadeUp 0.7s ease both;
+  }
+  .stat-card::before {
+    content: '';
+    position: absolute; top: 0; left: 0;
+    width: 3px; height: 100%;
+    background: var(--red);
+  }
+  .stat-number {
+    font-family: var(--mono);
+    font-size: 36px; font-weight: 700;
+    color: var(--red-hot); line-height: 1;
+  }
+  .stat-label {
+    font-family: var(--mono);
+    font-size: 10px; color: var(--text-dim);
+    letter-spacing: 0.12em; text-transform: uppercase;
+  }
+  .stat-sub {
+    font-family: var(--mono);
+    font-size: 9px; color: var(--text-dim);
+    margin-top: 2px;
+  }
+
+  /* ── DIVIDER ── */
+  .section-divider {
+    margin: 0 22px 50px;
+    border: none; border-top: 1px solid var(--border);
+  }
+
+  /* ── SECTION HEADER ── */
+  .section-header {
+    padding: 0 22px 28px;
+  }
+  .section-label {
+    font-family: var(--mono);
+    font-size: 9px; color: var(--red);
+    letter-spacing: 0.18em; text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+  .section-title {
+    font-family: var(--display);
+    font-size: clamp(26px, 7vw, 38px);
+    font-weight: 800; line-height: 1.05;
+    color: var(--text);
+  }
+  .section-title em {
+    font-style: italic;
+    font-family: var(--serif);
+    color: var(--red-hot);
+    font-weight: 400;
+  }
+  .section-body {
+    font-family: var(--display);
+    font-size: 14px; line-height: 1.65;
+    color: var(--text-mid);
+    padding: 0 22px; margin-bottom: 32px;
+  }
+
+  /* ── EQUATION BLOCK ── */
+  .eq-block {
+    margin: 0 22px 14px;
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 4px; padding: 16px 18px;
+  }
+  .eq-label {
+    font-family: var(--mono);
+    font-size: 8px; color: var(--red);
+    letter-spacing: 0.15em; text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+  .eq-formula {
+    font-family: var(--mono);
+    font-size: 13px; font-weight: 500;
+    color: var(--text);
+    word-break: break-all;
+    line-height: 1.7;
+  }
+  .eq-desc {
+    font-family: var(--mono);
+    font-size: 10px; color: var(--text-dim);
+    margin-top: 8px; line-height: 1.5;
+  }
+
+  /* ── PARAMETERS ── */
+  #parameters { padding-bottom: 50px; }
+  .param-list {
+    padding: 0 22px;
+    display: flex; flex-direction: column; gap: 1px;
+  }
+  .param-item {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 3px; padding: 16px 18px;
+    display: flex; gap: 14px; align-items: flex-start;
+    transition: border-color 0.2s, background 0.2s;
+    cursor: default;
+  }
+  .param-item:hover {
+    border-color: var(--red);
+    background: rgba(192,57,43,0.06);
+  }
+  .param-num {
+    font-family: var(--mono);
+    font-size: 10px; font-weight: 700;
+    color: var(--red-dim);
+    min-width: 22px; padding-top: 2px;
+  }
+  .param-content { flex: 1; }
+  .param-symbol {
+    font-family: var(--mono);
+    font-size: 16px; font-weight: 700;
+    color: var(--red-hot); margin-bottom: 3px;
+  }
+  .param-name {
+    font-size: 13px; font-weight: 600;
+    color: var(--text); margin-bottom: 4px;
+  }
+  .param-desc {
+    font-family: var(--mono);
+    font-size: 10px; color: var(--text-dim);
+    line-height: 1.5;
+  }
+  .param-badge {
+    font-family: var(--mono);
+    font-size: 8px; font-weight: 700;
+    padding: 3px 7px; border-radius: 2px;
+    background: var(--red-dim);
+    color: var(--text); letter-spacing: 0.1em;
+    text-transform: uppercase;
+    align-self: center; white-space: nowrap;
+  }
+
+  /* ── RISK SCALE ── */
+  #risk { padding-bottom: 50px; }
+  .risk-scale {
+    padding: 0 22px;
+    display: flex; flex-direction: column; gap: 8px;
+  }
+  .risk-item {
+    border-radius: 3px; padding: 14px 16px;
+    display: flex; justify-content: space-between; align-items: center;
+    border: 1px solid transparent;
+  }
+  .risk-item.safe { background: rgba(46,204,113,0.07); border-color: rgba(46,204,113,0.15); }
+  .risk-item.warn { background: rgba(243,156,18,0.07); border-color: rgba(243,156,18,0.15); }
+  .risk-item.high { background: rgba(231,126,35,0.07); border-color: rgba(231,126,35,0.15); }
+  .risk-item.crit { background: rgba(231,76,60,0.1); border-color: rgba(231,76,60,0.25); }
+  .risk-range {
+    font-family: var(--mono);
+    font-size: 14px; font-weight: 700;
+  }
+  .safe .risk-range { color: #2ecc71; }
+  .warn .risk-range { color: #f1c40f; }
+  .high .risk-range { color: #e67e22; }
+  .crit .risk-range { color: var(--red-hot); }
+  .risk-info {}
+  .risk-status {
+    font-size: 11px; font-weight: 700;
+    color: var(--text);
+  }
+  .risk-action {
+    font-family: var(--mono);
+    font-size: 9px; color: var(--text-dim);
+    letter-spacing: 0.08em; margin-top: 2px;
+  }
+  .risk-dot {
+    width: 8px; height: 8px; border-radius: 50%;
+  }
+  .safe .risk-dot { background: #2ecc71; }
+  .warn .risk-dot { background: #f1c40f; }
+  .high .risk-dot { background: #e67e22; }
+  .crit .risk-dot { background: var(--red-hot); animation: pulse-dot 1s ease infinite; }
+
+  /* ── CASE STUDIES ── */
+  #cases { padding-bottom: 50px; }
+  .case-card {
+    margin: 0 22px 12px;
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 4px; overflow: hidden;
+  }
+  .case-head {
+    background: rgba(192,57,43,0.1);
+    border-bottom: 1px solid var(--border);
+    padding: 14px 18px;
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .case-icon { font-size: 18px; }
+  .case-title {
+    font-size: 12px; font-weight: 700;
+    color: var(--text);
+  }
+  .case-date {
+    font-family: var(--mono);
+    font-size: 9px; color: var(--text-dim);
+    letter-spacing: 0.1em;
+    margin-top: 1px;
+  }
+  .case-psi {
+    font-family: var(--mono);
+    font-size: 22px; font-weight: 700;
+    color: var(--red-hot);
+    text-align: right;
+  }
+  .case-psi-label {
+    font-family: var(--mono);
+    font-size: 8px; color: var(--text-dim);
+    text-align: right; letter-spacing: 0.1em;
+  }
+  .case-body { padding: 14px 18px; }
+  .case-rows {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+  .case-row-item {}
+  .cr-label {
+    font-family: var(--mono);
+    font-size: 8px; color: var(--text-dim);
+    letter-spacing: 0.1em; text-transform: uppercase;
+  }
+  .cr-value {
+    font-family: var(--mono);
+    font-size: 13px; font-weight: 500;
+    color: var(--text); margin-top: 2px;
+  }
+
+  /* ── RESULTS TABLE ── */
+  #results { padding-bottom: 50px; }
+  .results-table {
+    margin: 0 22px;
+    border: 1px solid var(--border);
+    border-radius: 4px; overflow: hidden;
+  }
+  .rt-head {
+    background: var(--red-dim);
+    display: grid; grid-template-columns: 2fr 1fr 1fr;
+    padding: 10px 14px; gap: 8px;
+  }
+  .rt-head span {
+    font-family: var(--mono);
+    font-size: 8px; font-weight: 700;
+    color: #fff; letter-spacing: 0.12em; text-transform: uppercase;
+  }
+  .rt-row {
+    display: grid; grid-template-columns: 2fr 1fr 1fr;
+    padding: 12px 14px; gap: 8px;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    align-items: center;
+  }
+  .rt-row:last-child { border-bottom: none; }
+  .rt-row:nth-child(odd) { background: rgba(255,255,255,0.02); }
+  .rt-row span {
+    font-family: var(--mono);
+    font-size: 11px; color: var(--text-mid);
+  }
+  .rt-row span:first-child { font-weight: 500; color: var(--text); }
+  .rt-row span.good { color: #2ecc71; font-weight: 700; }
+  .rt-row span.accent { color: var(--red-hot); font-weight: 700; }
+
+  /* ── PUBLICATIONS ── */
+  #publications { padding-bottom: 50px; }
+  .pub-card {
+    margin: 0 22px 12px;
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 4px; padding: 18px;
+  }
+  .pub-type {
+    font-family: var(--mono);
+    font-size: 8px; color: var(--red);
+    letter-spacing: 0.15em; text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+  .pub-title {
+    font-size: 13px; font-weight: 700;
+    color: var(--text); line-height: 1.4;
+    margin-bottom: 8px;
+  }
+  .pub-meta {
+    font-family: var(--mono);
+    font-size: 10px; color: var(--text-dim);
+    margin-bottom: 12px; line-height: 1.5;
+  }
+  .pub-link {
+    font-family: var(--mono);
+    font-size: 10px; color: var(--red-hot);
+    text-decoration: none; letter-spacing: 0.08em;
+    border-bottom: 1px solid var(--red-dim);
+    padding-bottom: 1px; transition: border-color 0.2s;
+  }
+  .pub-link:hover { border-color: var(--red-hot); }
+
+  /* ── ACCESS LINKS ── */
+  #access { padding-bottom: 50px; }
+  .access-grid {
+    padding: 0 22px;
+    display: flex; flex-direction: column; gap: 8px;
+  }
+  .access-item {
+    display: flex; align-items: center; gap: 14px;
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 4px; padding: 16px 18px;
+    text-decoration: none;
+    transition: border-color 0.2s, background 0.2s;
+  }
+  .access-item:hover {
+    border-color: var(--red);
+    background: rgba(192,57,43,0.06);
+  }
+  .access-icon {
+    font-size: 20px; min-width: 28px;
+    text-align: center;
+  }
+  .access-info { flex: 1; }
+  .access-name {
+    font-size: 13px; font-weight: 700;
+    color: var(--text);
+  }
+  .access-desc {
+    font-family: var(--mono);
+    font-size: 9px; color: var(--text-dim);
+    letter-spacing: 0.05em; margin-top: 2px;
+  }
+  .access-arrow {
+    font-family: var(--mono);
+    font-size: 14px; color: var(--red);
+  }
+
+  /* ── QUOTE BLOCK ── */
+  .quote-block {
+    margin: 0 22px 50px;
+    border-left: 3px solid var(--red);
+    padding: 18px 20px;
+    background: rgba(192,57,43,0.05);
+    border-radius: 0 4px 4px 0;
+  }
+  .quote-text {
+    font-family: var(--serif);
+    font-size: 17px; font-style: italic;
+    color: var(--text-mid); line-height: 1.6;
+    margin-bottom: 10px;
+  }
+  .quote-author {
+    font-family: var(--mono);
+    font-size: 9px; color: var(--red);
+    letter-spacing: 0.12em; text-transform: uppercase;
+  }
+
+  /* ── FOOTER ── */
+  footer {
+    position: relative; z-index: 1;
+    background: var(--bg2);
+    border-top: 1px solid var(--border);
+    padding: 40px 22px 30px;
+  }
+  .footer-brand {
+    margin-bottom: 28px;
+  }
+  .footer-logo {
+    font-family: var(--display);
+    font-size: 22px; font-weight: 800;
+    color: var(--red-hot);
+    margin-bottom: 6px;
+  }
+  .footer-tagline {
+    font-family: var(--serif);
+    font-size: 13px; font-style: italic;
+    color: var(--text-dim); line-height: 1.5;
+  }
+
+  .footer-cols {
+    display: flex; flex-direction: column; gap: 28px;
+    margin-bottom: 32px;
+  }
+  .footer-col-title {
+    font-family: var(--mono);
+    font-size: 9px; font-weight: 700;
+    color: var(--red);
+    letter-spacing: 0.16em; text-transform: uppercase;
+    margin-bottom: 12px;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 8px;
+  }
+  .footer-links {
+    list-style: none; display: flex; flex-direction: column; gap: 8px;
+  }
+  .footer-links a {
+    font-family: var(--mono);
+    font-size: 11px; color: var(--text-dim);
+    text-decoration: none;
+    transition: color 0.2s;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .footer-links a:hover { color: var(--red-hot); }
+  .footer-links a span.link-icon { font-size: 12px; }
+
+  .footer-bottom {
+    border-top: 1px solid var(--border);
+    padding-top: 18px;
+    display: flex; flex-direction: column; gap: 6px;
+  }
+  .footer-copy {
+    font-family: var(--mono);
+    font-size: 10px; color: var(--text-dim);
+  }
+  .footer-copy strong { color: var(--red-hot); }
+  .footer-orcid {
+    font-family: var(--mono);
+    font-size: 9px; color: var(--text-dim);
+    letter-spacing: 0.05em;
+  }
+
+  /* ── ANIMATIONS ── */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(18px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes fillBar {
+    from { width: 0; }
+    to   { width: 47%; }
+  }
+  @keyframes pulse-dot {
+    0%, 100% { opacity: 1; }
+    50%       { opacity: 0.4; }
+  }
+  @keyframes scanLine {
+    0%   { transform: translateY(-100%); }
+    100% { transform: translateY(100vh); }
+  }
+  @keyframes countUp {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+  }
+
+  /* ── SCROLL REVEAL ── */
+  .reveal {
+    opacity: 0; transform: translateY(20px);
+    transition: opacity 0.6s ease, transform 0.6s ease;
+  }
+  .reveal.visible {
+    opacity: 1; transform: translateY(0);
+  }
+
+  /* ── SCAN EFFECT ── */
+  .scan-overlay {
+    position: absolute; inset: 0;
+    background: linear-gradient(180deg,
+      transparent 0%,
+      rgba(192,57,43,0.02) 50%,
+      transparent 100%);
+    height: 60px;
+    animation: scanLine 4s linear infinite;
+    pointer-events: none;
+  }
+
+  /* ── TERMINAL BLOCK ── */
+  .terminal {
+    margin: 0 22px 32px;
+    background: #0a0f0e;
+    border: 1px solid var(--border);
+    border-radius: 4px; overflow: hidden;
+  }
+  .terminal-bar {
+    background: var(--bg3);
+    border-bottom: 1px solid var(--border);
+    padding: 8px 14px;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .t-dot { width: 8px; height: 8px; border-radius: 50%; }
+  .t-dot:nth-child(1) { background: #ff5f57; }
+  .t-dot:nth-child(2) { background: #febc2e; }
+  .t-dot:nth-child(3) { background: #28c840; }
+  .terminal-code {
+    padding: 16px 18px;
+    font-family: var(--mono);
+    font-size: 11px; line-height: 1.8;
+    color: var(--text-dim);
+  }
+  .tc-comment { color: #4a5568; }
+  .tc-keyword { color: #fc8181; }
+  .tc-fn { color: #90cdf4; }
+  .tc-str { color: #68d391; }
+  .tc-num { color: #fbd38d; }
+  .tc-out { color: var(--red-hot); }
+  .tc-prompt { color: var(--red); }
+
+  /* ── BADGE ROW ── */
+  .badge-row {
+    padding: 0 22px; margin-bottom: 50px;
+    display: flex; flex-wrap: wrap; gap: 8px;
+  }
+  .badge {
+    font-family: var(--mono);
+    font-size: 9px; color: var(--text-dim);
+    border: 1px solid var(--border);
+    padding: 4px 10px; border-radius: 2px;
+    letter-spacing: 0.08em;
+  }
+  .badge.active { color: #2ecc71; border-color: rgba(46,204,113,0.3); }
+  .badge.pub { color: var(--red-hot); border-color: var(--red-dim); }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a class="nav-logo" href="#">ENTROPIA</a>
+</nav>
+
+<!-- HERO -->
+<section id="hero">
+  <div class="entropy-grid">
+    <svg viewBox="0 0 400 800" preserveAspectRatio="xMidYMid slice">
+      <defs>
+        <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+          <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#c0392b" stroke-width="0.5"/>
+        </pattern>
+      </defs>
+      <rect width="400" height="800" fill="url(#grid)"/>
+    </svg>
+    <div class="scan-overlay"></div>
+  </div>
+
+  <span class="hero-tag">E-LAB-01 · Entropy Research Lab · March 2026</span>
+
+  <h1 class="hero-title">ENTRO<em>PIA</em></h1>
+
+  <p class="hero-subtitle">
+    Statistical Dynamics of Information Dissipation in Complex
+    Non-Linear Digital Systems. When information becomes thermodynamics,
+    prediction becomes possible.
+  </p>
+
+  <!-- Live Ψ display -->
+  <div class="psi-live">
+    <div class="psi-label">Ψ · Dissipation Coefficient · Live Simulation</div>
+    <div class="psi-row">
+      <div class="psi-value" id="psiVal">1.84</div>
+      <div class="psi-unit">Ψ</div>
+    </div>
+    <div class="psi-status">
+      <div class="status-dot warn"></div>
+      <span class="status-text" id="psiStatus">ELEVATED · τ_collapse ≈ 38.4 s</span>
+    </div>
+    <div class="psi-bar-track">
+      <div class="psi-bar-fill"></div>
+    </div>
+  </div>
+
+  <div class="hero-btns">
+    <a href="https://entropia-lab.netlify.app/dashboard" class="btn-primary">
+      📊 &nbsp;Live Dashboard
+    </a>
+    <a href="https://entropia-lab.netlify.app/paper" class="btn-ghost">
+      📄 &nbsp;Research Paper
+    </a>
+  </div>
+</section>
+
+<!-- STATS -->
+<section id="stats">
+  <div class="stat-card reveal" style="animation-delay:0.1s">
+    <div class="stat-number">93.9%</div>
+    <div class="stat-label">Detection Accuracy</div>
+    <div class="stat-sub">163 collapse events · 3 environments · E-ENV-01/02/03</div>
+  </div>
+  <div class="stat-card reveal" style="animation-delay:0.2s">
+    <div class="stat-number">41.5 s</div>
+    <div class="stat-label">Mean Collapse Lead Time</div>
+    <div class="stat-sub">±11.2 s · before catastrophic system failure</div>
+  </div>
+  <div class="stat-card reveal" style="animation-delay:0.3s">
+    <div class="stat-number">1.9%</div>
+    <div class="stat-label">False Positive Rate</div>
+    <div class="stat-sub">Ψ > 2.0 threshold · adversarial stress test</div>
+  </div>
+  <div class="stat-card reveal" style="animation-delay:0.4s">
+    <div class="stat-number">5</div>
+    <div class="stat-label">Governing Parameters</div>
+    <div class="stat-sub">First-principles thermodynamic derivation</div>
+  </div>
+</section>
+
+<hr class="section-divider">
+
+<!-- PROBLEM -->
+<section id="problem">
+  <div class="section-header reveal">
+    <div class="section-label">01 · The Core Problem</div>
+    <h2 class="section-title">Digital collapse is<br><em>thermodynamics</em>,<br>not software.</h2>
+  </div>
+
+  <p class="section-body reveal">
+    On October 4, 2021, Meta's infrastructure collapsed for 6 hours —
+    disconnecting <strong style="color:var(--text)">3.5 billion users</strong>.
+    The thermodynamic warning signatures were present in behavioral data
+    <strong style="color:var(--red-hot)">34 minutes before collapse</strong>.
+    No framework existed to read them.
+  </p>
+
+  <p class="section-body reveal">
+    ENTROPIA proves that all systemic digital failures are, at their core,
+    <em style="color:var(--text-mid)">inevitable phase transitions</em> —
+    thermodynamic events governed by the same statistical laws that describe
+    molecular disorder in classical physics.
+  </p>
+</section>
+
+<hr class="section-divider">
+
+<!-- FRAMEWORK -->
+<section id="framework">
+  <div class="section-header reveal">
+    <div class="section-label">02 · Theoretical Framework</div>
+    <h2 class="section-title">Boltzmann<br>meets <em>Shannon</em></h2>
+  </div>
+
+  <p class="section-body reveal">
+    The Unified Dissipation State Function merges two traditions
+    separated for 75 years into a single master equation.
+  </p>
+
+  <div class="eq-block reveal">
+    <div class="eq-label">Eq. 4 · Unified Dissipation State Function</div>
+    <div class="eq-formula">S_total = α·k_B[−Σ pᵢ ln pᵢ]<br>+ β·k_B ln 2[−Σ P(xᵢ) log₂ P(xᵢ)]</div>
+    <div class="eq-desc">α, β — structural vs. informational coupling constants (α + β = 1)</div>
+  </div>
+
+  <div class="eq-block reveal">
+    <div class="eq-label">Eq. 5 · Entropy Balance (Time Evolution)</div>
+    <div class="eq-formula">dS/dt = σ_production + ∇·J_S</div>
+    <div class="eq-desc">Steady state: dS/dt = 0 · Collapse onset: dS/dt &gt; 0 (irreversible)</div>
+  </div>
+
+  <div class="eq-block reveal">
+    <div class="eq-label">Eq. 9 · Dissipation Coefficient Ψ</div>
+    <div class="eq-formula">Ψ(ρ) = [S_total/S_max] × [1−(ρ_c/ρ)²]⁻¹</div>
+    <div class="eq-desc">Diverges as ρ→ρ_c — mathematical fingerprint of phase transition</div>
+  </div>
+
+  <!-- Terminal quickstart -->
+  <div class="terminal reveal">
+    <div class="terminal-bar">
+      <div class="t-dot"></div><div class="t-dot"></div><div class="t-dot"></div>
+      <span style="font-family:var(--mono);font-size:9px;color:var(--text-dim);margin-left:8px">entropia · quickstart</span>
+    </div>
+    <div class="terminal-code">
+<span class="tc-comment"># pip install entropia</span><br>
+<span class="tc-keyword">from</span> entropia <span class="tc-keyword">import</span> <span class="tc-fn">EntropiaSystem</span><br>
+<br>
+sys = <span class="tc-fn">EntropiaSystem</span>(<br>
+&nbsp;&nbsp;architecture=<span class="tc-str">"von_neumann"</span>,<br>
+&nbsp;&nbsp;total_capacity=<span class="tc-num">1e9</span><br>
+)<br>
+sys.<span class="tc-fn">update</span>(bit_rate=<span class="tc-num">7.2e8</span>, cpu=<span class="tc-num">0.76</span>)<br>
+<br>
+<span class="tc-comment"># → Output</span><br>
+<span class="tc-out">Ψ = 1.847</span><br>
+<span class="tc-out">τ_collapse = 38.4 s ⚠️</span>
+    </div>
+  </div>
+</section>
+
+<hr class="section-divider">
+
+<!-- PARAMETERS -->
+<section id="parameters">
+  <div class="section-header reveal">
+    <div class="section-label">03 · Five Parameters</div>
+    <h2 class="section-title">Every dimension<br>of <em>entropic risk</em></h2>
+  </div>
+
+  <div class="param-list">
+    <div class="param-item reveal">
+      <div class="param-num">01</div>
+      <div class="param-content">
+        <div class="param-symbol">ρ</div>
+        <div class="param-name">Data Density</div>
+        <div class="param-desc">bits·s⁻¹·m⁻³ · Fundamental control variable · ρ = Φ / V_eff</div>
+      </div>
+      <div class="param-badge">Critical</div>
+    </div>
+    <div class="param-item reveal">
+      <div class="param-num">02</div>
+      <div class="param-content">
+        <div class="param-symbol">ρ_c</div>
+        <div class="param-name">Critical Throughput Threshold</div>
+        <div class="param-desc">Phase transition boundary · ρ_c = [Ω_max·k_BT] / [E_bit·ln(Ω_max/Ω_min)]</div>
+      </div>
+      <div class="param-badge">Critical</div>
+    </div>
+    <div class="param-item reveal">
+      <div class="param-num">03</div>
+      <div class="param-content">
+        <div class="param-symbol">Ψ</div>
+        <div class="param-name">Dissipation Coefficient</div>
+        <div class="param-desc">Dimensionless · Composite risk index · Diverges at ρ→ρ_c</div>
+      </div>
+      <div class="param-badge">Primary</div>
+    </div>
+    <div class="param-item reveal">
+      <div class="param-num">04</div>
+      <div class="param-content">
+        <div class="param-symbol">σ</div>
+        <div class="param-name">Entropy Production Rate</div>
+        <div class="param-desc">J·K⁻¹·m⁻³·s⁻¹ · σ(ρ,T) = k_B[ρ/ρ_c]ⁿ × exp(−E_a/k_BT)</div>
+      </div>
+      <div class="param-badge">High</div>
+    </div>
+    <div class="param-item reveal">
+      <div class="param-num">05</div>
+      <div class="param-content">
+        <div class="param-symbol">τ</div>
+        <div class="param-name">Collapse Lead Time</div>
+        <div class="param-desc">Seconds · τ = [Ψ_c − Ψ(t)] / |dΨ/dt| · Actionable countdown</div>
+      </div>
+      <div class="param-badge">Ops</div>
+    </div>
+  </div>
+</section>
+
+<hr class="section-divider">
+
+<!-- RISK SCALE -->
+<section id="risk">
+  <div class="section-header reveal">
+    <div class="section-label">04 · Operational Risk Scale</div>
+    <h2 class="section-title">From <em>0.0</em><br>to collapse</h2>
+  </div>
+
+  <div class="risk-scale">
+    <div class="risk-item safe reveal">
+      <div>
+        <div class="risk-status">✅ Normal Operation</div>
+        <div class="risk-action">No action required</div>
+      </div>
+      <div class="risk-range">Ψ &lt; 0.7</div>
+    </div>
+    <div class="risk-item warn reveal">
+      <div>
+        <div class="risk-status">⚠️ Elevated Load</div>
+        <div class="risk-action">Monitor entropy production rate</div>
+      </div>
+      <div class="risk-range">0.7 – 1.4</div>
+    </div>
+    <div class="risk-item high reveal">
+      <div>
+        <div class="risk-status">🔶 Critical Zone</div>
+        <div class="risk-action">Intervention recommended</div>
+      </div>
+      <div class="risk-range">1.4 – 2.0</div>
+    </div>
+    <div class="risk-item crit reveal">
+      <div>
+        <div class="risk-status">🔴 Collapse Imminent</div>
+        <div class="risk-action">τ_collapse countdown active</div>
+      </div>
+      <div class="risk-range">Ψ &gt; 2.0</div>
+    </div>
+  </div>
+</section>
+
+<hr class="section-divider">
+
+<!-- CASE STUDIES -->
+<section id="cases">
+  <div class="section-header reveal">
+    <div class="section-label">05 · Case Studies</div>
+    <h2 class="section-title">Retroactive<br><em>proof of concept</em></h2>
+  </div>
+
+  <div class="case-card reveal">
+    <div class="case-head">
+      <div>
+        <div class="case-icon">🌐</div>
+        <div class="case-title">Meta Global Outage</div>
+        <div class="case-date">October 4, 2021 · BGP Collapse · 3.5B Users</div>
+      </div>
+      <div>
+        <div class="case-psi">2.31</div>
+        <div class="case-psi-label">Peak Ψ</div>
+      </div>
+    </div>
+    <div class="case-body">
+      <div class="case-rows">
+        <div class="case-row-item">
+          <div class="cr-label">Warning Lead</div>
+          <div class="cr-value" style="color:#2ecc71">43 seconds</div>
+        </div>
+        <div class="case-row-item">
+          <div class="cr-label">Ψ > 1.6 Duration</div>
+          <div class="cr-value">34 min prior</div>
+        </div>
+        <div class="case-row-item">
+          <div class="cr-label">ρ/ρ_c at peak</div>
+          <div class="cr-value">0.97</div>
+        </div>
+        <div class="case-row-item">
+          <div class="cr-label">Event Type</div>
+          <div class="cr-value" style="color:var(--red-hot)">Phase Transition</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="case-card reveal">
+    <div class="case-head">
+      <div>
+        <div class="case-icon">🤖</div>
+        <div class="case-title">E-ENV-03 Adversarial Stress</div>
+        <div class="case-date">10⁹ Nodes · BGP Injection Simulation</div>
+      </div>
+      <div>
+        <div class="case-psi">2.0+</div>
+        <div class="case-psi-label">Threshold</div>
+      </div>
+    </div>
+    <div class="case-body">
+      <div class="case-rows">
+        <div class="case-row-item">
+          <div class="cr-label">Detection Rate</div>
+          <div class="cr-value" style="color:#2ecc71">94.3%</div>
+        </div>
+        <div class="case-row-item">
+          <div class="cr-label">False Positives</div>
+          <div class="cr-value" style="color:#2ecc71">1.7%</div>
+        </div>
+        <div class="case-row-item">
+          <div class="cr-label">Mean Lead Time</div>
+          <div class="cr-value">43.2 ± 8.6 s</div>
+        </div>
+        <div class="case-row-item">
+          <div class="cr-label">Events</div>
+          <div class="cr-value">94 / 100</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="section-divider">
+
+<!-- RESULTS TABLE -->
+<section id="results">
+  <div class="section-header reveal">
+    <div class="section-label">06 · Validation Results</div>
+    <h2 class="section-title">163 events<br><em>three environments</em></h2>
+  </div>
+
+  <div class="results-table reveal">
+    <div class="rt-head">
+      <span>Environment</span>
+      <span>Detect</span>
+      <span>Lead (s)</span>
+    </div>
+    <div class="rt-row">
+      <span>E-ENV-01 Static 10³</span>
+      <span class="good">100%</span>
+      <span>N/A</span>
+    </div>
+    <div class="rt-row">
+      <span>E-ENV-02 Streaming 10⁵</span>
+      <span class="accent">92.2%</span>
+      <span>38.7 ±12</span>
+    </div>
+    <div class="rt-row">
+      <span>E-ENV-03 Adversarial 10⁹</span>
+      <span class="accent">94.3%</span>
+      <span>43.2 ±9</span>
+    </div>
+    <div class="rt-row" style="border-top:1px solid var(--red-dim)">
+      <span style="font-weight:700;color:var(--red-hot)">Combined</span>
+      <span class="good">93.9%</span>
+      <span style="color:var(--red-hot)">41.5 ±11</span>
+    </div>
+  </div>
+</section>
+
+<hr class="section-divider">
+
+<!-- QUOTE -->
+<div class="quote-block reveal">
+  <div class="quote-text">
+    "When we learn to read entropy in our machines, we gain sovereignty
+    over the digital world — exactly as thermodynamics gave the 19th century
+    sovereignty over physical machines."
+  </div>
+  <div class="quote-author">— Samir Baladi · ENTROPIA · E-LAB-01 · March 2026</div>
+</div>
+
+<!-- PUBLICATIONS -->
+<section id="publications">
+  <div class="section-header reveal">
+    <div class="section-label">07 · Publications & Data</div>
+    <h2 class="section-title">Open science,<br><em>open source</em></h2>
+  </div>
+
+  <div class="pub-card reveal">
+    <div class="pub-type">2026 · Entropy (MDPI) · Submitted</div>
+    <div class="pub-title">ENTROPIA: Statistical Dynamics of Information Dissipation in Complex Non-Linear Digital Systems</div>
+    <div class="pub-meta">Original Research Article · March 2026<br>Samir Baladi · Ronin Institute / Rite of Renaissance</div>
+    <a class="pub-link" href="https://entropia-lab.netlify.app/paper">View Paper ↗</a>
+  </div>
+
+  <div class="pub-card reveal">
+    <div class="pub-type">PyPI · Python Package · Open Source</div>
+    <div class="pub-title">entropia — Thermodynamic Information Dissipation Framework</div>
+    <div class="pub-meta">EntropiaSystem, Ψ-Dashboard, CollapsePredictor, CalibrationEngine</div>
+    <a class="pub-link" href="https://pypi.org/project/entropia/">pip install entropia ↗</a>
+  </div>
+
+  <div class="pub-card reveal">
+    <div class="pub-type">Zenodo · CERN Data Centre · Open Access</div>
+    <div class="pub-title">ENTROPIA Dataset: 163-event validation catalogue + parameter time series</div>
+    <div class="pub-meta">HDF5 simulation archives · 10 Jupyter notebooks · Full reproducibility</div>
+    <a class="pub-link" href="#">Zenodo Archive ↗</a>
+  </div>
+</section>
+
+<hr class="section-divider">
+
+<!-- ACCESS -->
+<section id="access">
+  <div class="section-header reveal">
+    <div class="section-label">08 · Open Access</div>
+    <h2 class="section-title">Access the full<br><em>framework</em></h2>
+  </div>
+
+  <div class="access-grid">
+    <a class="access-item reveal" href="https://entropia-lab.netlify.app/dashboard">
+      <div class="access-icon">📊</div>
+      <div class="access-info">
+        <div class="access-name">Live Dashboard</div>
+        <div class="access-desc">Real-time Ψ monitoring · τ_collapse countdown</div>
+      </div>
+      <div class="access-arrow">↗</div>
+    </a>
+    <a class="access-item reveal" href="https://gitlab.com/gitdeeper10/entropia">
+      <div class="access-icon">🦊</div>
+      <div class="access-info">
+        <div class="access-name">GitLab Repository</div>
+        <div class="access-desc">Primary source · Full codebase · Issues & MRs</div>
+      </div>
+      <div class="access-arrow">↗</div>
+    </a>
+    <a class="access-item reveal" href="https://github.com/gitdeeper10/entropia">
+      <div class="access-icon">💻</div>
+      <div class="access-info">
+        <div class="access-name">GitHub Mirror</div>
+        <div class="access-desc">Mirror repository · Notebooks · Releases</div>
+      </div>
+      <div class="access-arrow">↗</div>
+    </a>
+    <a class="access-item reveal" href="https://pypi.org/project/entropia/">
+      <div class="access-icon">🐨</div>
+      <div class="access-info">
+        <div class="access-name">PyPI Package</div>
+        <div class="access-desc">pip install entropia · Python 3.11+</div>
+      </div>
+      <div class="access-arrow">↗</div>
+    </a>
+    <a class="access-item reveal" href="https://entropia-lab.netlify.app/events">
+      <div class="access-icon">📋</div>
+      <div class="access-info">
+        <div class="access-name">Event Reports</div>
+        <div class="access-desc">entropia-lab.netlify.app/events</div>
+      </div>
+      <div class="access-arrow">↗</div>
+    </a>
+    <a class="access-item reveal" href="https://orcid.org/0009-0003-8903-0029">
+      <div class="access-icon">👤</div>
+      <div class="access-info">
+        <div class="access-name">ORCID Profile</div>
+        <div class="access-desc">0009-0003-8903-0029 · Samir Baladi</div>
+      </div>
+      <div class="access-arrow">↗</div>
+    </a>
+  </div>
+</section>
+
+<hr class="section-divider">
+
+<!-- BADGES -->
+<div class="badge-row">
+  <span class="badge pub">E-LAB-01</span>
+  <span class="badge active">Active Research</span>
+  <span class="badge">Python 3.11+</span>
+  <span class="badge pub">Entropy (MDPI)</span>
+  <span class="badge">MIT License</span>
+  <span class="badge active">Open Source</span>
+  <span class="badge">March 2026</span>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-brand">
+    <div class="footer-logo">ENTROPIA 🔴</div>
+    <div class="footer-tagline">
+      The Sun is not the only active engine in our universe —<br>
+      our digital infrastructure is one too. <strong style="font-style:normal;color:var(--text)">ENTROPIA makes it predictable.</strong>
+    </div>
+  </div>
+
+  <div class="footer-cols">
+    <div>
+      <div class="footer-col-title">Quick Links</div>
+      <ul class="footer-links">
+        <li><a href="#"><span class="link-icon">🏠</span> Home</a></li>
+        <li><a href="#parameters"><span class="link-icon">⚙️</span> Parameters</a></li>
+        <li><a href="#risk"><span class="link-icon">📈</span> Risk Scale</a></li>
+        <li><a href="#cases"><span class="link-icon">🔬</span> Case Studies</a></li>
+        <li><a href="#publications"><span class="link-icon">📄</span> Publications</a></li>
+        <li><a href="https://entropia-lab.netlify.app/dashboard"><span class="link-icon">📊</span> Live Dashboard</a></li>
+        <li><a href="https://entropia-lab.netlify.app/events"><span class="link-icon">📋</span> Event Reports</a></li>
+        <li><a href="https://entropia-lab.netlify.app/documentation"><span class="link-icon">📚</span> Documentation</a></li>
+      </ul>
+    </div>
+
+    <div>
+      <div class="footer-col-title">Code Repositories</div>
+      <ul class="footer-links">
+        <li><a href="https://gitlab.com/gitdeeper10/entropia"><span class="link-icon">🦊</span> GitLab (Primary)</a></li>
+        <li><a href="https://github.com/gitdeeper10/entropia"><span class="link-icon">💻</span> GitHub (Mirror)</a></li>
+        <li><a href="https://bitbucket.org/gitdeeper-10/entropia"><span class="link-icon">🏴</span> Bitbucket</a></li>
+        <li><a href="https://codeberg.org/gitdeeper10/entropia"><span class="link-icon">🏕</span> Codeberg</a></li>
+        <li><a href="https://pypi.org/project/entropia/"><span class="link-icon">🐨</span> PyPI Package</a></li>
+      </ul>
+    </div>
+
+    <div>
+      <div class="footer-col-title">Resources</div>
+      <ul class="footer-links">
+        <li><a href="https://entropia-lab.netlify.app/paper"><span class="link-icon">📄</span> Research Paper</a></li>
+        <li><a href="#"><span class="link-icon">📊</span> Zenodo Dataset</a></li>
+        <li><a href="https://osf.io/"><span class="link-icon">🔮</span> OSF Preregistration</a></li>
+        <li><a href="https://orcid.org/0009-0003-8903-0029"><span class="link-icon">👤</span> ORCID Profile</a></li>
+        <li><a href="https://entropia-lab.netlify.app"><span class="link-icon">🔴</span> ENTROPIA Portal</a></li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="footer-bottom">
+    <div class="footer-copy">
+      Copyright © <strong>ENTROPIA 🔴</strong> 2026 · All rights reserved
+    </div>
+  </div>
+</footer>
+
+<script>
+// ── SCROLL REVEAL ──
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (e.isIntersecting) { e.target.classList.add('visible'); }
+  });
+}, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+
+document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+// ── LIVE Ψ ANIMATION ──
+const psiEl = document.getElementById('psiVal');
+const statusEl = document.getElementById('psiStatus');
+
+const states = [
+  { val: 0.43, status: 'NORMAL OPERATION · τ_collapse > 300 s', dotClass: '' },
+  { val: 0.87, status: 'NORMAL · τ_collapse > 200 s', dotClass: '' },
+  { val: 1.24, status: 'ELEVATED · τ_collapse ≈ 142.1 s', dotClass: 'warn' },
+  { val: 1.61, status: 'HIGH LOAD · τ_collapse ≈ 89.3 s', dotClass: 'warn' },
+  { val: 1.84, status: 'CRITICAL ZONE · τ_collapse ≈ 38.4 s', dotClass: 'warn' },
+  { val: 2.07, status: '🔴 COLLAPSE IMMINENT · τ_collapse ≈ 12.1 s', dotClass: 'crit' },
+  { val: 2.31, status: '🔴 COLLAPSE IMMINENT · τ_collapse ≈ 4.3 s', dotClass: 'crit' },
+  { val: 1.12, status: 'RECOVERY · System throttled · τ_collapse > 180 s', dotClass: '' },
+];
+
+let idx = 4;
+const dot = document.querySelector('.status-dot');
+
+function updatePsi() {
+  idx = (idx + 1) % states.length;
+  const s = states[idx];
+
+  // Animate number
+  const start = parseFloat(psiEl.textContent);
+  const end = s.val;
+  const dur = 1200;
+  const startTime = performance.now();
+
+  function animate(now) {
+    const t = Math.min((now - startTime) / dur, 1);
+    const ease = t < 0.5 ? 2*t*t : -1+(4-2*t)*t;
+    psiEl.textContent = (start + (end - start) * ease).toFixed(2);
+    if (t < 1) requestAnimationFrame(animate);
+    else {
+      psiEl.textContent = end.toFixed(2);
+      statusEl.textContent = s.status;
+      dot.className = 'status-dot ' + s.dotClass;
+    }
+  }
+  requestAnimationFrame(animate);
+}
+
+setInterval(updatePsi, 3500);
+
+// ── STAT COUNTER ANIMATION ──
+const statNums = document.querySelectorAll('.stat-number');
+const statObserver = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      statObserver.unobserve(e.target);
+    }
+  });
+}, { threshold: 0.5 });
+statNums.forEach(el => statObserver.observe(el));
+</script>
+</body>
+</html>

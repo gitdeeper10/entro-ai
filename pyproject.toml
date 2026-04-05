@@ -1,0 +1,126 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "entro-ai"
+version = "2.0.0"
+description = "Entropy-Resistant Inference Architecture for Large Language Models & Neural Computing Systems"
+authors = [
+    {name = "Samir Baladi", email = "gitdeeper@gmail.com"}
+]
+license = {text = "MIT"}
+readme = "README.md"
+requires-python = ">=3.11"
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Science/Research",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Topic :: Scientific/Engineering :: Physics",
+    "Topic :: System :: Monitoring",
+]
+keywords = [
+    "entropy", "thermodynamics", "AI", "LLM", "hallucination",
+    "phase-transition", "inference", "monitoring", "EDT",
+    "entropy-resistant", "context-collapse"
+]
+
+dependencies = [
+    "numpy>=1.24.0",
+    "scipy>=1.10.0",
+    "pandas>=2.0.0",
+    "numba>=0.57.0",
+    "matplotlib>=3.7.0",
+    "plotly>=5.14.0",
+    "dash>=2.9.0",
+    "click>=8.1.0",
+    "pyyaml>=6.0",
+    "tqdm>=4.65.0",
+    "joblib>=1.2.0",
+    "fastapi>=0.104.0",
+    "uvicorn>=0.24.0",
+    "websockets>=12.0",
+    "pydantic>=2.0.0",
+    "httpx>=0.25.0",
+]
+
+[project.optional-dependencies]
+edt = [
+    "vllm>=0.2.0",
+    "torch>=2.0.0",
+    "transformers>=4.30.0",
+]
+dev = [
+    "pytest>=7.4.0",
+    "pytest-cov>=4.1.0",
+    "pytest-benchmark>=4.0.0",
+    "black>=23.0.0",
+    "isort>=5.12.0",
+    "flake8>=6.0.0",
+    "mypy>=1.4.0",
+    "pre-commit>=3.3.0",
+    "sphinx>=7.0.0",
+    "sphinx-rtd-theme>=1.2.0",
+]
+all = [
+    "entro-ai[edt,dev]"
+]
+
+[project.urls]
+"Homepage" = "https://entropia-lab.netlify.app/entro-ai"
+"Documentation" = "https://entropia-lab.netlify.app/entro-ai/docs"
+"Repository" = "https://gitlab.com/gitdeeper10/entro-ai"
+"GitHub Mirror" = "https://github.com/gitdeeper10/entro-ai"
+"PyPI" = "https://pypi.org/project/entro-ai"
+"DOI (ENTROPIA)" = "https://doi.org/10.5281/zenodo.19416737"
+"Issues" = "https://gitlab.com/gitdeeper10/entro-ai/-/issues"
+
+[project.scripts]
+entro-ai = "entro_ai.cli:main"
+entro-ai-dashboard = "entro_ai.dashboard.app:main"
+entro-ai-edt = "entro_ai.edt.app:main"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["entro_ai*"]
+
+[tool.black]
+line-length = 88
+target-version = ['py311']
+include = '\.pyi?$'
+
+[tool.isort]
+profile = "black"
+line_length = 88
+
+[tool.mypy]
+python_version = "3.11"
+warn_return_any = true
+warn_unused_configs = true
+ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+minversion = "7.0"
+addopts = "-ra -q --strict-markers"
+testpaths = ["tests"]
+markers = [
+    "slow: marks tests as slow (deselect with '-m \"not slow\"')",
+    "integration: marks tests as integration tests",
+    "gpu: marks tests that require GPU",
+]
+
+[tool.coverage.run]
+source = ["entro_ai"]
+omit = ["tests/*", "docs/*", "examples/*"]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "if self.debug:",
+    "if __name__ == .__main__.:",
+]

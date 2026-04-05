@@ -1,0 +1,49 @@
+# ENTRO-AI Core Requirements
+# Entropy-Resistant Inference Architecture for LLMs
+
+# Builds on ENTROPIA (E-LAB-01)
+# DOI: 10.5281/zenodo.19416737
+
+# Numerical Computing
+numpy>=1.24.0
+scipy>=1.10.0
+pandas>=2.0.0
+numba>=0.57.0
+
+# Visualization
+matplotlib>=3.7.0
+plotly>=5.14.0
+dash>=2.9.0
+dash-bootstrap-components>=1.4.0
+
+# CLI & Configuration
+click>=8.1.0
+pyyaml>=6.0
+tqdm>=4.65.0
+
+# Parallel Processing
+joblib>=1.2.0
+
+# Web Framework (for EDT microservice)
+fastapi>=0.104.0
+uvicorn>=0.24.0
+websockets>=12.0
+
+# Data Validation
+pydantic>=2.0.0
+
+# HTTP Client
+httpx>=0.25.0
+
+# Optional: JAX for GPU acceleration
+# jax>=0.4.0
+# jaxlib>=0.4.0
+
+# Optional: PyTorch for model integration
+# torch>=2.0.0
+
+# Optional: vLLM integration
+# vllm>=0.2.0
+
+# Optional: TensorRT-LLM integration
+# tensorrt-llm>=0.5.0

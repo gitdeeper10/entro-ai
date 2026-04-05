@@ -1,0 +1,57 @@
+# ENTROPIA Netlify Configuration
+# Thermodynamic Framework for Digital Systems
+# E-LAB-01 v1.0.0
+
+[build]
+  publish = "public"
+  command = "echo 'ENTROPIA static site - no build required'"
+
+# Main Pages
+[[redirects]]
+  from = "/"
+  to = "/index.html"
+  status = 200
+
+[[redirects]]
+  from = "/dashboard"
+  to = "/dashboard.html"
+  status = 200
+
+[[redirects]]
+  from = "/reports"
+  to = "/reports.html"
+  status = 200
+
+[[redirects]]
+  from = "/docs"
+  to = "/documentation.html"
+  status = 200
+
+[[redirects]]
+  from = "/documentation"
+  to = "/documentation.html"
+  status = 200
+
+[[redirects]]
+  from = "/parameters"
+  to = "/index.html#parameters"
+  status = 200
+
+[[redirects]]
+  from = "/risk"
+  to = "/index.html#risk"
+  status = 200
+
+# Catch-all redirect (404 handling)
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+# CORS Headers
+[[headers]]
+  for = "/*"
+  [headers.values]
+    Access-Control-Allow-Origin = "*"
+    Access-Control-Allow-Methods = "GET, OPTIONS"
+    Access-Control-Allow-Headers = "Content-Type"

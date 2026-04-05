@@ -1,0 +1,52 @@
+cff-version: 1.2.0
+message: "If you use ENTRO-AI in your research, please cite it as follows."
+title: "ENTRO-AI: Entropy-Resistant Inference Architecture for Large Language Models and Neural Computing Systems"
+authors:
+  - family-names: "Baladi"
+    given-names: "Samir"
+    orcid: "https://orcid.org/0009-0003-8903-0029"
+    affiliation: "Ronin Institute / Rite of Renaissance"
+    email: "gitdeeper@gmail.com"
+date-released: 2026-04-04
+version: 1.0.0
+doi: "10.5281/zenodo.19416737"
+license: "MIT"
+url: "https://entropia-lab.netlify.app/entro-ai"
+repository-code: "https://gitlab.com/gitdeeper10/entro-ai"
+keywords:
+  - entropy
+  - thermodynamics
+  - artificial-intelligence
+  - large-language-models
+  - hallucination-prevention
+  - phase-transition
+  - inference-monitoring
+  - EDT
+  - context-collapse
+type: "software"
+abstract: "ENTRO-AI applies the thermodynamic framework established in ENTROPIA (E-LAB-01) directly to the inference architecture of large language models (LLMs) and deep neural networks, proving that hallucination, context collapse, and inference degradation are thermodynamic phase transitions that can be predicted and prevented. The framework achieves 91.4% collapse detection accuracy with 34.7-second mean lead time and reduces hallucination rates by 67.3% under super-critical load through the Entropy-Driven Throttling (EDT) controller."
+
+references:
+  - type: article
+    authors:
+      - family-names: "Baladi"
+        given-names: "Samir"
+    title: "ENTROPIA: Statistical Dynamics of Information Dissipation in Complex Non-Linear Digital Systems"
+    year: 2026
+    doi: "10.5281/zenodo.19416737"
+    notes: "E-LAB-01 - Parent framework for ENTRO-AI"
+
+preferred-citation:
+  type: article
+  authors:
+    - family-names: "Baladi"
+      given-names: "Samir"
+  title: "ENTRO-AI: Entropy-Resistant Inference Architecture for Large Language Models and Neural Computing Systems"
+  journal: "Entropy Research Lab"
+  volume: 2
+  number: 1
+  pages: "1-52"
+  year: 2026
+  doi: "10.5281/zenodo.19416737"
+  url: "https://entropia-lab.netlify.app/entro-ai"
+  notes: "E-LAB-02 v1.0.0. Builds on ENTROPIA: 10.5281/zenodo.19416737"

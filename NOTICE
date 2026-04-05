@@ -1,0 +1,18 @@
+ENTRO-AI
+Copyright (c) 2026 Samir Baladi
+
+This software builds on ENTROPIA (E-LAB-01):
+DOI: 10.5281/zenodo.19416737
+URL: https://entropia-lab.netlify.app
+
+ENTRO-AI incorporates code and concepts from:
+- ENTROPIA Framework (MIT License)
+- NumPy (BSD License)
+- SciPy (BSD License)
+- FastAPI (MIT License)
+
+For complete license information, see LICENSE file.
+
+Project: ENTRO-AI (E-LAB-02)
+Principal Investigator: Samir Baladi
+Contact: gitdeeper@gmail.com

@@ -1,0 +1,97 @@
+# ENTRO-AI Pre-commit Hooks Configuration
+# Entropy-Resistant Inference Architecture
+
+repos:
+  # General hooks
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.4.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+      - id: check-json
+      - id: check-toml
+      - id: check-added-large-files
+        args: ['--maxkb=1000']
+      - id: check-merge-conflict
+      - id: detect-private-key
+      - id: mixed-line-ending
+        args: ['--fix=lf']
+      - id: debug-statements
+
+  # Python formatting
+  - repo: https://github.com/psf/black
+    rev: 23.3.0
+    hooks:
+      - id: black
+        language_version: python3.11
+        args: ['--line-length=88']
+
+  # Import sorting
+  - repo: https://github.com/pycqa/isort
+    rev: 5.12.0
+    hooks:
+      - id: isort
+        name: isort (python)
+        args: ['--profile=black', '--line-length=88']
+
+  # Python linting
+  - repo: https://github.com/pycqa/flake8
+    rev: 6.0.0
+    hooks:
+      - id: flake8
+        additional_dependencies:
+          - flake8-docstrings
+          - flake8-bugbear
+        args: ['--max-line-length=88', '--extend-ignore=E203,W503']
+
+  # Type checking
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v1.4.0
+    hooks:
+      - id: mypy
+        additional_dependencies:
+          - types-pyyaml
+          - types-click
+          - types-requests
+        args: ['--ignore-missing-imports']
+
+  # Security checks
+  - repo: https://github.com/PyCQA/bandit
+    rev: 1.7.5
+    hooks:
+      - id: bandit
+        args: ['-c', 'pyproject.toml', '-r', 'entro_ai']
+        additional_dependencies: ['bandit[toml]']
+
+  # Notebook cleanups
+  - repo: https://github.com/kynan/nbstripout
+    rev: 0.6.1
+    hooks:
+      - id: nbstripout
+        files: '\.ipynb$'
+
+  # Spell checking
+  - repo: https://github.com/codespell-project/codespell
+    rev: v2.2.5
+    hooks:
+      - id: codespell
+        args: ['--skip=*.ipynb,*.bib', '--ignore-words-list=te,reacher,ro,ned,wiht']
+
+  # Detect secrets
+  - repo: https://github.com/Yelp/detect-secrets
+    rev: v1.4.0
+    hooks:
+      - id: detect-secrets
+        args: ['--baseline', '.secrets.baseline']
+        exclude: 'poetry.lock'
+
+exclude: |
+  (?x)^(
+    docs/|
+    .gitlab/|
+    \.github/|
+    tests/fixtures/|
+    examples/data/|
+    calibration/models/
+  )$

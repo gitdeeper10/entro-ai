@@ -1,0 +1,980 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ENTROPIA 🔴 — Documentation</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@300;400;500;700&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+<style>
+:root {
+  --red:       #c0392b;
+  --red-hot:   #e74c3c;
+  --red-dim:   #7b1c14;
+  --red-glow:  rgba(192,57,43,0.25);
+  --bg:        #080c0b;
+  --bg2:       #0f1412;
+  --bg3:       #141a18;
+  --border:    rgba(192,57,43,0.2);
+  --text:      #e8e0db;
+  --text-dim:  #8a8078;
+  --text-mid:  #c4b8b0;
+  --mono:      'JetBrains Mono', monospace;
+  --display:   'Syne', sans-serif;
+  --serif:     'Instrument Serif', serif;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--display);
+  font-size: 17px;
+  line-height: 1.7;
+  overflow-x: hidden;
+}
+
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.035'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.4;
+}
+
+.red-glow {
+  position: fixed;
+  top: -300px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 900px;
+  height: 600px;
+  background: radial-gradient(ellipse at center top, rgba(192,57,43,0.13) 0%, rgba(231,76,60,0.06) 40%, transparent 70%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+nav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+  background: rgba(8,12,11,0.92);
+  backdrop-filter: blur(14px);
+  border-bottom: 1px solid var(--border);
+  padding: 0 3rem;
+  display: flex; align-items: center;
+  justify-content: space-between;
+  height: 56px;
+}
+.nav-logo {
+  font-family: var(--mono);
+  font-size: 13px;
+  color: var(--red-hot);
+  letter-spacing: 0.12em;
+  text-decoration: none;
+}
+.nav-links { display: flex; gap: 2rem; list-style: none; }
+.nav-links a {
+  font-family: var(--mono);
+  font-size: 10px; letter-spacing: 0.08em;
+  color: var(--text-dim); text-decoration: none;
+  text-transform: uppercase; transition: color 0.2s;
+}
+.nav-links a:hover { color: var(--red-hot); }
+.nav-links a.active { color: var(--red-hot); border-bottom: 1px solid var(--red); padding-bottom: 0.25rem; }
+.nav-badge {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--text-dim);
+  letter-spacing: 0.05em;
+}
+.nav-badge span { color: var(--red-hot); }
+
+@media (max-width: 900px) {
+  .nav-links, .nav-badge { display: none; }
+  nav { padding: 0 1.5rem; }
+}
+
+.hero {
+  position: relative; min-height: 50vh;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  text-align: center;
+  padding: 8rem 1.5rem 4rem;
+  overflow: hidden;
+}
+
+.hero-bg {
+  position: absolute; inset: 0; z-index: 0;
+  background:
+    radial-gradient(ellipse 80% 50% at 50% 100%, rgba(192,57,43,0.08) 0%, transparent 70%),
+    radial-gradient(ellipse 60% 40% at 20% 60%, rgba(231,76,60,0.05) 0%, transparent 60%);
+}
+
+.hero-version {
+  font-family: var(--mono);
+  font-size: 10px; letter-spacing: 0.25em;
+  color: var(--red); text-transform: uppercase;
+  border: 1px solid rgba(192,57,43,0.25);
+  padding: 0.4rem 1.2rem; border-radius: 2px;
+  margin-bottom: 2rem; display: inline-block;
+  background: rgba(192,57,43,0.04);
+  position: relative; z-index: 1;
+  animation: fadeUp 0.7s ease forwards; opacity: 0;
+}
+
+.hero-title {
+  font-family: var(--display);
+  font-weight: 800;
+  font-size: clamp(2.5rem, 6vw, 4.5rem);
+  line-height: 1; letter-spacing: -0.02em;
+  position: relative; z-index: 1;
+  animation: fadeUp 0.7s 0.1s ease forwards; opacity: 0;
+}
+.hero-title .accent { color: var(--red-hot); }
+.hero-title .accent2 { color: var(--red-dim); }
+
+.hero-sub {
+  font-family: var(--mono);
+  font-size: 11px; letter-spacing: 0.2em;
+  color: var(--red); text-transform: uppercase;
+  margin: 1rem 0 1.5rem;
+  position: relative; z-index: 1;
+  animation: fadeUp 0.7s 0.2s ease forwards; opacity: 0;
+}
+
+.hero-desc {
+  font-size: 1rem; line-height: 1.7;
+  color: var(--text-mid);
+  max-width: 640px; margin: 0 auto;
+  position: relative; z-index: 1;
+  animation: fadeUp 0.7s 0.3s ease forwards; opacity: 0;
+}
+
+.docs-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.8rem;
+  justify-content: center;
+  margin: 2rem 0;
+}
+.docs-badges span {
+  font-family: var(--mono);
+  font-size: 10px;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  padding: 0.4rem 1rem;
+  border-radius: 2px;
+  color: var(--text-dim);
+  letter-spacing: 0.05em;
+}
+.docs-info {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+  justify-content: center;
+  font-size: 12px;
+  color: var(--text-dim);
+}
+.docs-info span { font-family: var(--mono); }
+
+.docs-container {
+  max-width: 1300px;
+  margin: 0 auto;
+  padding: 2rem 2rem 5rem;
+  display: grid;
+  grid-template-columns: 280px 1fr;
+  gap: 3rem;
+  position: relative;
+  z-index: 2;
+}
+
+.docs-sidebar {
+  position: sticky;
+  top: 80px;
+  height: calc(100vh - 100px);
+  overflow-y: auto;
+  padding-right: 1rem;
+}
+.docs-sidebar::-webkit-scrollbar { width: 4px; }
+.docs-sidebar::-webkit-scrollbar-track { background: var(--bg3); }
+.docs-sidebar::-webkit-scrollbar-thumb { background: var(--red); border-radius: 2px; }
+
+.sidebar-section {
+  margin-bottom: 2rem;
+}
+.sidebar-title {
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: 1.2rem;
+  color: var(--red-hot);
+  margin-bottom: 1rem;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 0.5rem;
+}
+.sidebar-links {
+  list-style: none;
+}
+.sidebar-links li {
+  margin-bottom: 0.3rem;
+}
+.sidebar-links a {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--text-dim);
+  text-decoration: none;
+  display: block;
+  padding: 0.3rem 0;
+  transition: color 0.2s, padding-left 0.2s;
+}
+.sidebar-links a:hover {
+  color: var(--red-hot);
+  padding-left: 0.5rem;
+}
+
+.docs-content {
+  min-width: 0;
+}
+.docs-section {
+  margin-bottom: 4rem;
+  scroll-margin-top: 80px;
+}
+
+.info-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1.5rem;
+  margin: 2rem 0;
+}
+.info-card {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  padding: 1.8rem 1.5rem;
+  transition: all 0.25s;
+  position: relative;
+  overflow: hidden;
+}
+.info-card::before {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, var(--red), var(--red-hot));
+  opacity: 0; transition: opacity 0.25s;
+}
+.info-card:hover {
+  background: rgba(192,57,43,0.025);
+  transform: translateY(-4px);
+}
+.info-card:hover::before { opacity: 1; }
+.info-card .stat {
+  font-family: var(--display);
+  font-size: 2.2rem;
+  font-weight: 800;
+  color: var(--red-hot);
+  display: block;
+  margin-bottom: 0.4rem;
+}
+.info-card .label {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-mid);
+}
+.info-card .desc {
+  margin-top: 0.8rem;
+  font-size: 13px;
+  color: var(--text-dim);
+  line-height: 1.5;
+}
+
+.code-box {
+  font-family: var(--mono);
+  font-size: 12px;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--red);
+  padding: 1.8rem 2rem;
+  line-height: 1.8;
+  color: var(--text);
+  margin: 2rem 0;
+  white-space: pre-wrap;
+}
+
+.code-box .comment { color: var(--text-dim); }
+.code-box .keyword { color: var(--red-hot); }
+.code-box .string { color: var(--text-mid); }
+.code-box .func { color: var(--text); }
+
+.param-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 2rem 0;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+}
+.param-table th {
+  font-family: var(--mono);
+  font-weight: 700;
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  background: var(--bg3);
+  color: var(--red-hot);
+  padding: 1rem;
+  text-align: left;
+  border-bottom: 1px solid var(--border);
+}
+.param-table td {
+  padding: 1rem;
+  border-bottom: 1px solid var(--border);
+  color: var(--text-dim);
+  font-size: 13px;
+}
+.param-table tr:last-child td { border-bottom: none; }
+.param-table tbody tr:nth-child(odd) { background: rgba(192,57,43,0.02); }
+.param-table td:first-child { 
+  font-family: var(--mono);
+  color: var(--red); 
+  font-weight: 500;
+}
+
+.api-item {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--red);
+  padding: 2rem;
+  margin: 2rem 0;
+  transition: background 0.25s;
+}
+.api-item:hover { background: rgba(192,57,43,0.02); }
+.api-name {
+  font-family: var(--display);
+  font-weight: 800;
+  font-size: 1.3rem;
+  color: var(--red-hot);
+  margin-bottom: 0.8rem;
+}
+.api-desc {
+  color: var(--text-dim);
+  margin-bottom: 1.2rem;
+}
+.api-example {
+  font-family: var(--mono);
+  font-size: 11px;
+  background: var(--bg3);
+  padding: 1.5rem;
+  border-left: 2px solid var(--red);
+  color: var(--text);
+  line-height: 1.7;
+}
+
+.author-section {
+  display: flex;
+  gap: 2rem;
+  margin: 2rem 0;
+  padding: 2rem;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--red);
+}
+.author-icon { font-size: 3rem; min-width: 70px; text-align: center; }
+.author-info h3 {
+  font-family: var(--display);
+  font-weight: 800;
+  font-size: 1.5rem;
+  color: var(--text);
+  margin-bottom: 0.5rem;
+}
+.author-title {
+  color: var(--red-hot);
+  margin-bottom: 0.8rem;
+  font-size: 13px;
+}
+.author-details {
+  color: var(--text-dim);
+  margin-bottom: 1rem;
+  font-family: var(--mono);
+  font-size: 11px;
+}
+.author-bio {
+  color: var(--text-dim);
+  line-height: 1.8;
+  margin-bottom: 1.2rem;
+}
+.author-contact {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2rem;
+  margin-top: 1rem;
+}
+.author-contact a {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--red-hot);
+  text-decoration: none;
+  border-bottom: 1px solid rgba(192,57,43,0.2);
+  transition: border-color 0.2s;
+}
+.author-contact a:hover { border-color: var(--red); }
+
+.quote {
+  background: var(--bg2);
+  border-left: 3px solid var(--red-hot);
+  padding: 2rem;
+  margin: 2rem 0;
+  font-style: italic;
+  color: var(--text-mid);
+  line-height: 1.8;
+  font-family: var(--serif);
+  font-size: 1.1rem;
+}
+
+.section-tag {
+  font-family: var(--mono);
+  font-size: 10px; letter-spacing: 0.28em;
+  color: var(--red); text-transform: uppercase;
+  display: block; margin-bottom: 0.7rem;
+}
+.section-title {
+  font-family: var(--display);
+  font-weight: 800;
+  font-size: clamp(2rem, 4vw, 2.8rem);
+  line-height: 1.1; margin-bottom: 1.2rem;
+}
+.section-title em { font-style: italic; color: var(--red-hot); }
+.section-p {
+  font-size: 1rem; line-height: 1.8;
+  color: var(--text-dim);
+  margin-bottom: 1rem;
+}
+
+.cta-section {
+  background: var(--bg3);
+  text-align: center;
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  padding: 4rem 2rem;
+}
+.cta-btns {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-top: 2.5rem;
+}
+.btn-main {
+  font-family: var(--mono);
+  font-weight: 700; font-size: 11px;
+  letter-spacing: 0.12em; text-transform: uppercase;
+  background: var(--red); color: #fff;
+  padding: 0.85rem 2.2rem; border: none;
+  text-decoration: none; cursor: pointer;
+  transition: all 0.25s;
+}
+.btn-main:hover { background: var(--red-hot); transform: translateY(-2px); box-shadow: 0 0 28px rgba(231,76,60,0.35); }
+.btn-ghost {
+  font-family: var(--mono);
+  font-size: 11px; letter-spacing: 0.1em;
+  text-transform: uppercase; color: var(--text-dim);
+  border: 1px solid rgba(192,57,43,0.35);
+  padding: 0.8rem 1.8rem; text-decoration: none;
+  transition: all 0.25s;
+}
+.btn-ghost:hover { color: var(--text); border-color: var(--red); }
+
+footer {
+  background: var(--bg2);
+  border-top: 1px solid var(--border);
+  padding: 40px 22px 30px;
+}
+.footer-brand {
+  margin-bottom: 28px;
+}
+.footer-logo {
+  font-family: var(--display);
+  font-size: 22px; font-weight: 800;
+  color: var(--red-hot);
+  margin-bottom: 6px;
+}
+.footer-tagline {
+  font-family: var(--serif);
+  font-size: 13px; font-style: italic;
+  color: var(--text-dim); line-height: 1.5;
+}
+.footer-cols {
+  display: flex; flex-direction: column; gap: 28px;
+  margin-bottom: 32px;
+}
+.footer-col-title {
+  font-family: var(--mono);
+  font-size: 9px; font-weight: 700;
+  color: var(--red);
+  letter-spacing: 0.16em; text-transform: uppercase;
+  margin-bottom: 12px;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 8px;
+}
+.footer-links {
+  list-style: none; display: flex; flex-direction: column; gap: 8px;
+}
+.footer-links a {
+  font-family: var(--mono);
+  font-size: 11px; color: var(--text-dim);
+  text-decoration: none;
+  transition: color 0.2s;
+  display: flex; align-items: center; gap: 6px;
+}
+.footer-links a:hover { color: var(--red-hot); }
+.footer-links a span.link-icon { font-size: 12px; }
+.footer-bottom {
+  border-top: 1px solid var(--border);
+  padding-top: 18px;
+  display: flex; flex-direction: column; gap: 6px;
+}
+.footer-copy {
+  font-family: var(--mono);
+  font-size: 10px; color: var(--text-dim);
+}
+.footer-copy strong { color: var(--red-hot); }
+
+@media (min-width: 768px) {
+  .footer-cols {
+    flex-direction: row;
+    justify-content: space-between;
+  }
+  .footer-cols > div {
+    flex: 1;
+  }
+}
+@media (max-width: 900px) {
+  .docs-container { grid-template-columns: 1fr; }
+  .docs-sidebar { 
+    position: relative;
+    top: 0;
+    height: auto;
+    max-height: 400px;
+    margin-bottom: 2rem;
+  }
+}
+
+.reveal {
+  opacity: 0; transform: translateY(24px);
+  transition: opacity 0.65s ease, transform 0.65s ease;
+}
+.reveal.visible { opacity: 1; transform: translateY(0); }
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(18px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+</style>
+</head>
+<body>
+
+<div class="red-glow"></div>
+
+<nav>
+  <a href="index.html" class="nav-logo">ENTROPIA 🔴</a>
+  
+  <div class="nav-badge">E-LAB-01 · v1.0.0 · <span>DOI:10.5281/zenodo.19183878</span> · 163 Events</div>
+</nav>
+
+<section class="hero">
+  <div class="hero-bg"></div>
+  <span class="hero-version">Technical Documentation · API Reference · Thermodynamic Framework</span>
+  <h1 class="hero-title">
+    <span class="accent">ENTRO</span><span class="accent2">PIA</span>
+  </h1>
+  <p class="hero-sub">Documentation</p>
+  <p class="hero-desc">
+    Complete guide for the five-parameter thermodynamic framework that treats digital information as a physical entity governed by statistical mechanics. Unified Boltzmann-Shannon entropy, collapse prediction, and real-time monitoring.
+  </p>
+  
+  <div class="docs-badges">
+    <span>DOI: 10.5281/zenodo.19183878</span>
+    <span>Python 3.11+</span>
+    <span>MIT License</span>
+    <span>163 Events</span>
+    <span>5 Parameters</span>
+  </div>
+  
+  <div class="docs-info">
+    <span>v1.0.0 · Stable</span>
+    <span>Released: March 28, 2026</span>
+    <span>163 Events Validated</span>
+    <span>94.3% Accuracy</span>
+    <span>43.2s Lead Time</span>
+  </div>
+</section>
+
+<div class="docs-container">
+  <div class="docs-sidebar">
+    <div class="sidebar-section">
+      <div class="sidebar-title">🔴 Documentation</div>
+      <ul class="sidebar-links">
+        <li><a href="#overview">🔴 Overview</a></li>
+        <li><a href="#research-paper">📄 Research Paper</a></li>
+        <li><a href="#key-results">📊 Key Results</a></li>
+        <li><a href="#parameters">📐 ENTROPIA Parameters</a></li>
+        <li><a href="#unified-equation">⚛️ Unified Equation</a></li>
+        <li><a href="#risk-scale">⚠️ Risk Scale</a></li>
+        <li><a href="#installation">📦 Installation</a></li>
+        <li><a href="#api">🔧 API Reference</a></li>
+        <li><a href="#modules">🧩 Core Modules</a></li>
+        <li><a href="#author">👤 Author</a></li>
+        <li><a href="#citation">📝 Citation</a></li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="docs-content">
+    <section id="overview" class="docs-section">
+      <span class="section-tag">🔴 Overview</span>
+      <h2 class="section-title">When information becomes <em>thermodynamics</em>, prediction becomes possible</h2>
+      <p class="section-p"><em>"When we learn to read entropy in our machines, we gain sovereignty over the digital world."</em> — Samir Baladi, March 2026</p>
+      <p class="section-p">ENTROPIA is a first-principles thermodynamic framework that treats digital information as a physical entity governed by statistical mechanics. It introduces five governing parameters to predict, quantify, and monitor entropic phase transitions in high-density data environments — before catastrophic collapse occurs.</p>
+      
+      <div class="info-grid">
+        <div class="info-card"><div class="stat">94.3%</div><div class="label">Detection Rate</div><div class="desc">E-ENV-03 adversarial environment</div></div>
+        <div class="info-card"><div class="stat">43.2s</div><div class="label">Lead Time</div><div class="desc">Before catastrophic collapse</div></div>
+        <div class="info-card"><div class="stat">163</div><div class="label">Events</div><div class="desc">Validation catalogue</div></div>
+        <div class="info-card"><div class="stat">1.9%</div><div class="label">False Positive</div><div class="desc">Ψ > 2.0 threshold</div></div>
+        <div class="info-card"><div class="stat">5</div><div class="label">Parameters</div><div class="desc">Thermodynamic framework</div></div>
+        <div class="info-card"><div class="stat">Ψ_c=2.0</div><div class="label">Critical Threshold</div><div class="desc">Universal collapse boundary</div></div>
+      </div>
+    </section>
+
+    <section id="research-paper" class="docs-section">
+      <span class="section-tag">📄 Research Paper</span>
+      <h2 class="section-title">Entropy (MDPI) — <em>Original Research Article</em></h2>
+      
+      <div class="api-item">
+        <div class="api-name">ENTROPIA Research Paper</div>
+        <div class="api-desc">Submitted to Entropy (MDPI) · March 28, 2026</div>
+        <div class="api-example">
+<strong>Title:</strong> ENTROPIA: Statistical Dynamics of Information Dissipation in Complex Non-Linear Digital Systems — A Unified Thermodynamic-Information Framework for Predicting Phase Transitions & Systemic Collapse in High-Density Data Environments<br>
+<strong>Author:</strong> Samir Baladi<br>
+<strong>Affiliation:</strong> Ronin Institute / Rite of Renaissance<br>
+<strong>DOI:</strong> 10.5281/zenodo.19183878<br>
+<strong>License:</strong> MIT License<br>
+<strong>Status:</strong> Under review<br>
+<strong>Keywords:</strong> statistical mechanics, information theory, non-linear dynamics, phase transition, stochastic processes, Boltzmann entropy, Shannon entropy, critical point, data dissipation, thermodynamic unification, agent-based modeling, Monte Carlo simulation, information physics, complexity theory, Entropia framework
+        </div>
+      </div>
+    </section>
+
+    <section id="key-results" class="docs-section">
+      <span class="section-tag">📊 Key Results</span>
+      <h2 class="section-title">Validation <em>performance metrics</em></h2>
+      
+      <div class="info-grid">
+        <div class="info-card"><div class="stat">94.3%</div><div class="label">Detection Rate</div><div class="desc">E-ENV-03 adversarial</div></div>
+        <div class="info-card"><div class="stat">93.9%</div><div class="label">Combined Accuracy</div><div class="desc">163 events, 3 environments</div></div>
+        <div class="info-card"><div class="stat">43.2s</div><div class="label">Lead Time</div><div class="desc">E-ENV-03 average</div></div>
+        <div class="info-card"><div class="stat">1.7%</div><div class="label">False Positive</div><div class="desc">E-ENV-03 threshold</div></div>
+        <div class="info-card"><div class="stat">1.87</div><div class="label">Scaling Exponent</div><div class="desc">Von Neumann architecture</div></div>
+        <div class="info-card"><div class="stat">$40B</div><div class="label">Annual Savings</div><div class="desc">10% outage reduction</div></div>
+      </div>
+    </section>
+
+    <section id="parameters" class="docs-section">
+      <span class="section-tag">📐 ENTROPIA Parameters</span>
+      <h2 class="section-title">Five governing <em>thermodynamic parameters</em></h2>
+      
+      <table class="param-table">
+        <thead><tr><th>Parameter</th><th>Symbol</th><th>Units</th><th>Critical Threshold</th><th>Description</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Data Density</td><td>ρ</td><td>bits·s⁻¹·m⁻³</td><td>ρ < ρ_c</td><td>Fundamental control variable: ρ = Φ / V_eff</td></tr>
+          <tr><td>Critical Throughput</td><td>ρ_c</td><td>bits·s⁻¹·m⁻³</td><td>System-specific</td><td>Phase transition boundary</td></tr>
+          <tr><td>Dissipation Coefficient</td><td>Ψ</td><td>Dimensionless</td><td>Ψ_c = 2.0</td><td>Composite risk index, diverges at ρ→ρ_c</td></tr>
+          <tr><td>Entropy Production Rate</td><td>σ</td><td>J·K⁻¹·m⁻³·s⁻¹</td><td>dσ/dt > 0</td><td>σ(ρ,T) = k_B[ρ/ρ_c]ⁿ × exp(−E_a/k_BT)</td></tr>
+          <tr><td>Collapse Lead Time</td><td>τ_collapse</td><td>seconds</td><td>τ > 30s</td><td>τ = [Ψ_c − Ψ(t)] / |dΨ/dt|</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section id="unified-equation" class="docs-section">
+      <span class="section-tag">⚛️ Unified Equation</span>
+      <h2 class="section-title">Boltzmann meets <em>Shannon</em></h2>
+      
+      <div class="code-box">
+<span class="comment">// Unified Dissipation State Function</span>
+<span class="comment">// ENTROPIA Master Equation (Eq. 4)</span>
+
+<span class="keyword">S_total</span> = α · k_B [−Σ pᵢ ln pᵢ] + β · k_B ln 2 [−Σ P(xᵢ) log₂ P(xᵢ)]
+
+<span class="comment">// Where:</span>
+<span class="comment">// α, β — coupling constants (α + β = 1)</span>
+<span class="comment">// First term — Gibbs statistical entropy (system microstates)</span>
+<span class="comment">// Second term — Shannon information entropy (data stream)</span>
+<span class="comment">// k_B ln 2 — conversion from bits to thermodynamic units</span>
+
+<span class="comment">// Entropy Balance Equation (Eq. 5)</span>
+<span class="keyword">dS/dt</span> = σ_production + ∇ · J_S
+
+<span class="comment">// Steady state (optimal operation): dS/dt = 0</span>
+<span class="comment">// Super-critical (collapse-bound): dS/dt > 0</span>
+
+<span class="comment">// Dissipation Coefficient (Eq. 9)</span>
+<span class="keyword">Ψ(ρ)</span> = [S_total / S_max] × [1 − (ρ_c/ρ)²]⁻¹
+      </div>
+    </section>
+
+    <section id="risk-scale" class="docs-section">
+      <span class="section-tag">⚠️ Risk Scale</span>
+      <h2 class="section-title">Operational <em>risk levels</em></h2>
+      
+      <div class="info-grid">
+        <div class="info-card"><div class="stat">Ψ < 0.7</div><div class="label">✅ Normal</div><div class="desc">No action required</div></div>
+        <div class="info-card"><div class="stat">0.7–1.4</div><div class="label">⚠️ Elevated</div><div class="desc">Monitor entropy production rate</div></div>
+        <div class="info-card"><div class="stat">1.4–2.0</div><div class="label">🔶 Critical</div><div class="desc">Intervention recommended</div></div>
+        <div class="info-card"><div class="stat">Ψ > 2.0</div><div class="label">🔴 COLLAPSE</div><div class="desc">τ_collapse countdown active</div></div>
+      </div>
+    </section>
+
+    <section id="installation" class="docs-section">
+      <span class="section-tag">📦 Installation</span>
+      <h2 class="section-title">Quick <em>setup</em></h2>
+      
+      <div class="code-box">
+<span class="comment"># Install from PyPI</span>
+<span class="keyword">pip</span> install entropia
+
+<span class="comment"># Clone repository</span>
+<span class="keyword">git</span> clone https://github.com/gitdeeper10/entropia.git
+<span class="keyword">cd</span> entropia
+
+<span class="comment"># Install with pip</span>
+<span class="keyword">pip</span> install -r requirements.txt
+<span class="keyword">pip</span> install -e .
+
+<span class="comment"># Or using Docker</span>
+<span class="keyword">docker</span> pull gitdeeper10/entropia
+<span class="keyword">docker</span> run -p 8080:8080 gitdeeper10/entropia
+
+<span class="comment"># Verify installation</span>
+<span class="keyword">python</span> -c <span class="string">"from entropia import __version__; print(__version__)"</span>
+      </div>
+    </section>
+
+    <section id="api" class="docs-section">
+      <span class="section-tag">🔧 API Reference</span>
+      <h2 class="section-title">Python <em>interface</em></h2>
+      
+      <div class="api-item">
+        <div class="api-name">EntropiaSystem</div>
+        <div class="api-desc">Main ENTROPIA system class for monitoring digital infrastructure</div>
+        <div class="api-example">
+<span class="keyword">from</span> entropia <span class="keyword">import</span> <span class="func">EntropiaSystem</span>
+
+<span class="comment"># Initialize system</span>
+system = <span class="func">EntropiaSystem</span>(
+    architecture=<span class="string">"von_neumann"</span>,
+    total_capacity=<span class="string">1e9</span>,
+    temperature=<span class="string">300</span>
+)
+
+<span class="comment"># Update with telemetry</span>
+state = system.<span class="func">update</span>(
+    bit_rate=<span class="string">7.2e8</span>,
+    microstate_probabilities=[<span class="string">0.5</span>, <span class="string">0.3</span>, <span class="string">0.2</span>],
+    symbol_probabilities=[<span class="string">0.4</span>, <span class="string">0.3</span>, <span class="string">0.2</span>, <span class="string">0.1</span>]
+)
+
+<span class="keyword">print</span>(<span class="func">f</span><span class="string">"Ψ = {state['psi']:.3f}"</span>)
+<span class="keyword">print</span>(<span class="func">f</span><span class="string">"Risk: {state['risk_level']}"</span>)
+        </div>
+      </div>
+
+      <div class="api-item">
+        <div class="api-name">DissipationCoefficient</div>
+        <div class="api-desc">Calculate and monitor Ψ — the composite risk index</div>
+        <div class="api-example">
+<span class="keyword">from</span> entropia.parameters <span class="keyword">import</span> <span class="func">DissipationCoefficient</span>
+
+psi = <span class="func">DissipationCoefficient</span>(
+    rho=<span class="string">0.8e9</span>,
+    rho_c=<span class="string">1e9</span>,
+    S_total=<span class="string">100</span>,
+    S_max=<span class="string">150</span>
+)
+
+<span class="keyword">print</span>(<span class="func">f</span><span class="string">"Ψ = {psi.value:.3f}"</span>)
+<span class="keyword">print</span>(<span class="func">f</span><span class="string">"Risk Level: {psi.risk_level()}"</span>)
+<span class="keyword">print</span>(<span class="func">f</span><span class="string">"Critical: {psi.is_critical()}"</span>)
+        </div>
+      </div>
+
+      <div class="api-item">
+        <div class="api-name">CollapseLeadTime</div>
+        <div class="api-desc">Predict time remaining before critical collapse</div>
+        <div class="api-example">
+<span class="keyword">from</span> entropia.parameters <span class="keyword">import</span> <span class="func">CollapseLeadTime</span>
+
+tau = <span class="func">CollapseLeadTime</span>(
+    psi_current=<span class="string">1.8</span>,
+    dpsi_dt=<span class="string">0.025</span>
+)
+
+<span class="keyword">print</span>(<span class="func">f</span><span class="string">"τ_collapse = {float(tau):.1f} seconds"</span>)
+<span class="keyword">print</span>(<span class="func">f</span><span class="string">"Actionable: {tau.is_actionable()}"</span>)
+        </div>
+      </div>
+    </section>
+
+    <section id="modules" class="docs-section">
+      <span class="section-tag">🧩 Core Modules</span>
+      <h2 class="section-title">ENTROPIA <em>architecture</em></h2>
+      
+      <div class="info-grid">
+        <div class="info-card"><div class="stat">core.py</div><div class="label">Unified Equation</div><div class="desc">Boltzmann, Shannon, S_total</div></div>
+        <div class="info-card"><div class="stat">parameters.py</div><div class="label">5 Parameters</div><div class="desc">ρ, ρ_c, Ψ, σ, τ_collapse</div></div>
+        <div class="info-card"><div class="stat">detector.py</div><div class="label">Ψ-Dashboard</div><div class="desc">Real-time monitoring engine</div></div>
+        <div class="info-card"><div class="stat">simulation/</div><div class="label">3 Environments</div><div class="desc">E-ENV-01, 02, 03</div></div>
+        <div class="info-card"><div class="stat">reports/</div><div class="label">Reports</div><div class="desc">Daily, Weekly, Monthly, Alerts</div></div>
+        <div class="info-card"><div class="stat">Netlify/</div><div class="label">Dashboard</div><div class="desc">Live web interface</div></div>
+      </div>
+    </section>
+
+    <section id="author" class="docs-section">
+      <span class="section-tag">👤 Author</span>
+      <h2 class="section-title">Principal <em>investigator</em></h2>
+      
+      <div class="author-section">
+        <div class="author-icon">🔴</div>
+        <div class="author-info">
+          <h3>Samir Baladi</h3>
+          <div class="author-title">Interdisciplinary AI Researcher — Theoretical Physics, Statistical Mechanics & Information Theory</div>
+          <div class="author-details">Ronin Institute / Rite of Renaissance</div>
+          <div class="author-bio">Samir Baladi is an independent researcher affiliated with the Ronin Institute, developing the Rite of Renaissance interdisciplinary research program. ENTROPIA is the foundational project (E-LAB-01) in a nine-project research program establishing the thermodynamic unification of digital information systems. The framework was validated against 163 simulation events across three environments and retrospectively validated against the 2021 Meta infrastructure outage.</div>
+          <div class="author-bio">No conflicts of interest declared. All code and data are open-source under MIT License.</div>
+          <div class="author-contact">
+            <span>📧 <a href="mailto:gitdeeper@gmail.com">gitdeeper@gmail.com</a></span>
+            <span>🔗 <a href="https://orcid.org/0009-0003-8903-0029">ORCID: 0009-0003-8903-0029</a></span>
+            <span>🐙 <a href="https://github.com/gitdeeper10/entropia">GitHub</a></span>
+            <span>🦊 <a href="https://gitlab.com/gitdeeper10/entropia">GitLab</a></span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="citation" class="docs-section">
+      <span class="section-tag">📝 Citation</span>
+      <h2 class="section-title">How to <em>cite</em></h2>
+      
+      <div class="code-box">
+@article{baladi2026entropia,
+  title   = {ENTROPIA: Statistical Dynamics of Information Dissipation
+             in Complex Non-Linear Digital Systems},
+  author  = {Baladi, Samir},
+  journal = {Entropy (MDPI)},
+  year    = {2026},
+  month   = {March},
+  note    = {Manuscript submitted for review},
+  url     = {https://entropia-lab.netlify.app},
+  doi     = {10.5281/zenodo.19183878}
+}
+      </div>
+      
+      <div class="quote">
+        "When we learn to read entropy in our machines, we gain sovereignty over the digital world — exactly as thermodynamics gave the 19th century sovereignty over physical machines."
+      </div>
+    </section>
+  </div>
+</div>
+
+<section class="cta-section">
+  <div class="section-inner" style="text-align:center;">
+    <span class="section-tag reveal">Open Science · Open Source</span>
+    <h2 class="section-title reveal">Start Exploring</h2>
+    <p class="section-p reveal" style="margin:0 auto; max-width:600px;">
+      Access the complete framework, validation dataset, and Python package.
+    </p>
+    <div class="cta-btns reveal">
+      <a href="https://github.com/gitdeeper10/entropia" class="btn-main" target="_blank">💻 GitHub</a>
+      <a href="https://pypi.org/project/entropia" class="btn-ghost" target="_blank">📦 PyPI</a>
+      <a href="reports.html" class="btn-ghost">📊 Reports</a>
+      <a href="https://entropia-lab.netlify.app/dashboard" class="btn-ghost">📊 Dashboard</a>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="footer-brand">
+    <div class="footer-logo">ENTROPIA 🔴</div>
+    <div class="footer-tagline">
+      The Sun is not the only active engine in our universe —<br>
+      our digital infrastructure is one too. <strong style="font-style:normal;color:var(--text)">ENTROPIA makes it predictable.</strong>
+    </div>
+  </div>
+
+  <div class="footer-cols">
+    <div>
+      <div class="footer-col-title">Quick Links</div>
+      <ul class="footer-links">
+        <li><a href="index.html"><span class="link-icon">🏠</span> Home</a></li>
+        <li><a href="index.html#parameters"><span class="link-icon">⚙️</span> Parameters</a></li>
+        <li><a href="index.html#risk"><span class="link-icon">📈</span> Risk Scale</a></li>
+        <li><a href="reports.html"><span class="link-icon">📋</span> Reports</a></li>
+        <li><a href="https://entropia-lab.netlify.app/dashboard"><span class="link-icon">📊</span> Live Dashboard</a></li>
+        <li><a href="documentation.html"><span class="link-icon">📚</span> Documentation</a></li>
+      </ul>
+    </div>
+
+    <div>
+      <div class="footer-col-title">Code Repositories</div>
+      <ul class="footer-links">
+        <li><a href="https://gitlab.com/gitdeeper10/entropia"><span class="link-icon">🦊</span> GitLab (Primary)</a></li>
+        <li><a href="https://github.com/gitdeeper10/entropia"><span class="link-icon">💻</span> GitHub (Mirror)</a></li>
+        <li><a href="https://bitbucket.org/gitdeeper-10/entropia"><span class="link-icon">🏴</span> Bitbucket</a></li>
+        <li><a href="https://codeberg.org/gitdeeper10/entropia"><span class="link-icon">🏕</span> Codeberg</a></li>
+        <li><a href="https://pypi.org/project/entropia/"><span class="link-icon">🐨</span> PyPI Package</a></li>
+      </ul>
+    </div>
+
+    <div>
+      <div class="footer-col-title">Resources</div>
+      <ul class="footer-links">
+        <li><a href="https://entropia-lab.netlify.app/paper"><span class="link-icon">📄</span> Research Paper</a></li>
+        <li><a href="#"><span class="link-icon">📊</span> Zenodo Dataset</a></li>
+        <li><a href="https://osf.io/"><span class="link-icon">🔮</span> OSF Preregistration</a></li>
+        <li><a href="https://orcid.org/0009-0003-8903-0029"><span class="link-icon">👤</span> ORCID Profile</a></li>
+        <li><a href="https://entropia-lab.netlify.app"><span class="link-icon">🔴</span> ENTROPIA Portal</a></li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="footer-bottom">
+    <div class="footer-copy">
+      Copyright © <strong>ENTROPIA 🔴</strong> 2026 · All rights reserved
+    </div>
+  </div>
+</footer>
+
+<script>
+const reveals = document.querySelectorAll('.reveal');
+const obs = new IntersectionObserver((entries) => {
+  entries.forEach((e, i) => {
+    if (e.isIntersecting) {
+      setTimeout(() => e.target.classList.add('visible'), i * 70);
+    }
+  });
+}, { threshold: 0.08 });
+reveals.forEach(el => obs.observe(el));
+
+document.querySelectorAll('.sidebar-links a').forEach(anchor => {
+  anchor.addEventListener('click', function (e) {
+    e.preventDefault();
+    const target = document.querySelector(this.getAttribute('href'));
+    if (target) {
+      target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  });
+});
+</script>
+</body>
+</html>

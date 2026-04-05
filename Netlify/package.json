@@ -1,0 +1,32 @@
+{
+  "name": "entropia-netlify",
+  "version": "1.0.0",
+  "description": "ENTROPIA — Statistical Dynamics of Information Dissipation. Thermodynamic framework for predicting digital system collapse.",
+  "main": "index.html",
+  "scripts": {
+    "dev": "echo 'Open index.html in browser'",
+    "build": "echo 'Static site - no build required'"
+  },
+  "keywords": [
+    "entropy",
+    "thermodynamics",
+    "information-theory",
+    "phase-transition",
+    "system-failure",
+    "prediction",
+    "statistical-mechanics",
+    "digital-infrastructure",
+    "entropia",
+    "psi-dashboard"
+  ],
+  "author": "Samir Baladi <gitdeeper@gmail.com>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/gitdeeper9/entropia"
+  },
+  "bugs": {
+    "url": "https://github.com/gitdeeper9/entropia/issues"
+  },
+  "homepage": "https://entropy.netlify.app"
+}
